@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TQ CRM — Традиции и Качество</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--sidebar:#161b27;--card:#1e2535;--card2:#252d3d;
+  --border:#2a3347;--text:#e8eaf0;--muted:#6b7a99;--accent:#3b7fff;
+  --hot:#ff4d6d;--high:#f59e0b;--mid:#6b7a99;--low:#374151;
+  --aqua:#0ea5e9;--dino:#22c55e;
+  --font:'Manrope',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f1117 0%,#161b27 50%,#0f1117 100%)}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;text-align:center;width:380px;box-shadow:0 40px 80px rgba(0,0,0,0.5)}
+.login-logo{font-size:48px;margin-bottom:16px}
+.login-title{font-size:24px;font-weight:800;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font)}
+.btn-google:hover{background:#2a3347;border-color:var(--accent)}
+.btn-google img{width:20px;height:20px}
+
+/* APP */
+#app{display:none;flex:1;overflow:hidden;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-logo{font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text)}
+.header-logo span{color:var(--accent)}
+.project-tabs{display:flex;gap:6px;margin-left:8px}
+.proj-tab{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s;font-family:var(--font)}
+.proj-tab.active{border-color:var(--accent);background:rgba(59,127,255,0.1);color:var(--accent)}
+.proj-tab.aqua.active{border-color:var(--aqua);background:rgba(14,165,233,0.1);color:var(--aqua)}
+.proj-tab.dino.active{border-color:var(--dino);background:rgba(34,197,94,0.1);color:var(--dino)}
+.proj-stat{font-size:10px;font-weight:500;opacity:0.7}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.search-box{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;width:220px;font-family:var(--font);outline:none}
+.search-box::placeholder{color:var(--muted)}
+.user-avatar{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid var(--border)}
+.btn-add{padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+
+/* MAIN LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:210px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar-section{padding:14px 12px 8px}
+.sidebar-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.cat-btn{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:12px;text-align:left;margin-bottom:1px;transition:all 0.12s;font-family:var(--font)}
+.cat-btn:hover{background:var(--card);color:var(--text)}
+.cat-btn.active{background:rgba(59,127,255,0.12);color:var(--accent)}
+.cat-btn .cat-icon{font-size:14px;flex-shrink:0;width:18px}
+.cat-btn .cat-name{flex:1;font-size:11px;line-height:1.3}
+.cat-btn .cat-count{font-size:10px;background:var(--card2);padding:1px 5px;border-radius:8px;color:var(--muted)}
+.cat-btn.active .cat-count{background:rgba(59,127,255,0.2);color:var(--accent)}
+.divider{height:1px;background:var(--border);margin:6px 12px}
+
+/* TABLE AREA */
+.content{flex:1;display:flex;overflow:hidden}
+.table-area{flex:1;overflow-y:auto;background:var(--bg)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{position:sticky;top:0;z-index:5;background:var(--sidebar)}
+th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+tr.row{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+tr.row:hover{background:var(--card)}
+tr.row.selected{background:rgba(59,127,255,0.07)}
+td{padding:10px 12px;vertical-align:middle}
+.company-name{font-weight:700;color:var(--text);font-size:13px}
+.company-cn{font-size:10px;color:var(--muted);margin-top:1px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-hot{background:rgba(255,77,109,0.15);color:#ff4d6d;border:1px solid rgba(255,77,109,0.3)}
+.badge-high{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.badge-mid{background:rgba(107,122,153,0.15);color:#6b7a99;border:1px solid rgba(107,122,153,0.2)}
+.badge-low{background:rgba(55,65,81,0.3);color:#6b7a99;border:1px solid rgba(55,65,81,0.3)}
+.badge-aqua{background:rgba(14,165,233,0.15);color:var(--aqua);border:1px solid rgba(14,165,233,0.2)}
+.badge-dino{background:rgba(34,197,94,0.15);color:var(--dino);border:1px solid rgba(34,197,94,0.2)}
+.stage-sel{background:transparent;border:none;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);outline:none}
+.photo-count{background:rgba(59,127,255,0.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-size:10px}
+.tel-link{color:var(--accent);text-decoration:none;font-size:11px}
+
+/* DETAIL PANEL */
+.detail{width:0;border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s;flex-shrink:0}
+.detail.open{width:420px}
+.detail-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--card2);flex-shrink:0}
+.detail-name{font-size:15px;font-weight:800;color:var(--text)}
+.detail-cn{font-size:11px;color:var(--muted);margin-top:2px}
+.detail-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.dtab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;font-family:var(--font)}
+.dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.detail-body{flex:1;overflow-y:auto;padding:16px}
+.detail-close{float:right;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:14px;font-family:var(--font)}
+.field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.field-value{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px}
+.field-note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#f59e0b;line-height:1.5;margin-bottom:14px}
+.contact-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
+.contact-name{font-weight:700;font-size:13px;color:var(--text)}
+.contact-role{font-size:11px;color:var(--muted);margin-top:1px}
+.contact-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:11px}
+.stage-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.stage-pill{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;font-family:var(--font)}
+.stage-pill.active{border-color:var(--accent);background:rgba(59,127,255,0.12);color:var(--accent)}
+
+/* COMMENTS */
+.comment-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.comment-meta{font-size:10px;color:var(--muted);margin-bottom:6px}
+.comment-text{font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap}
+.comment-del{float:right;background:transparent;border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-family:var(--font)}
+.comment-input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;resize:none;font-family:var(--font);outline:none;margin-top:8px}
+.btn-primary{padding:8px 16px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;margin-top:8px}
+
+/* PHOTOS */
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.photo-item img{width:100%;height:110px;object-fit:cover;display:block}
+.photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,77,109,0.9);color:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.photo-name{font-size:10px;color:var(--muted);padding:5px 8px;background:var(--card2)}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;margin-bottom:12px;transition:border-color 0.15s}
+.upload-zone:hover{border-color:var(--accent);color:var(--accent)}
+
+/* MODAL ADD */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:500px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;display:block}
+.form-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font);outline:none}
+.form-input:focus{border-color:var(--accent)}
+textarea.form-input{resize:vertical;min-height:60px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.btn-cancel{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:var(--font)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--text);z-index:200;transform:translateY(80px);opacity:0;transition:all 0.3s}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .detail.open{width:100%;position:fixed;inset:0;z-index:50}
+  .header-logo{display:none}
+  .search-box{width:140px}
+}
+.empty{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🏢</div>
+    <div class="login-title">TQ CRM</div>
+    <div class="login-sub">Традиции и Качество · База поставщиков<br>Витебск 2026 · Лесковичи</div>
+    <button class="btn-google" onclick="signIn()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+      Войти через Google
+    </button>
+    <div id="login-error" style="color:#ff4d6d;font-size:12px;margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">TQ <span>CRM</span></div>
+    <div class="project-tabs">
+      <button class="proj-tab active" id="tab-all" onclick="setProject('all')">
+        ◉ Все &nbsp;<span class="proj-stat" id="stat-all"></span>
+      </button>
+      <button class="proj-tab aqua" id="tab-aqua" onclick="setProject('aqua')">
+        🌊 Аква Витебск &nbsp;<span class="proj-stat" id="stat-aqua"></span>
+      </button>
+      <button class="proj-tab dino" id="tab-dino" onclick="setProject('dino')">
+        🦕 DinoAlpaca &nbsp;<span class="proj-stat" id="stat-dino"></span>
+      </button>
+    </div>
+    <div class="header-right">
+      <input class="search-box" placeholder="🔍 Поиск..." id="search-input" oninput="renderTable()">
+      <button class="btn-add" onclick="openAddModal()">+ Добавить</button>
+      <img class="user-avatar" id="user-avatar" src="" title="Выйти" onclick="signOut()">
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Категория</div>
+        <div id="cat-list"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Приоритет</div>
+        <div id="priority-stats"></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="table-area">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Компания</th>
+              <th>Проект</th>
+              <th>Категория</th>
+              <th>Приоритет</th>
+              <th>Стадия</th>
+              <th>Контакт</th>
+              <th>Телефон</th>
+              <th>Фото</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div id="empty-state" class="empty" style="display:none">Поставщики не найдены</div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="detail" id="detail-panel">
+        <div class="detail-header">
+          <button class="detail-close" onclick="closeDetail()">✕</button>
+          <div class="detail-name" id="d-name"></div>
+          <div class="detail-cn" id="d-cn"></div>
+          <div class="detail-badges" id="d-badges"></div>
+          <div class="stage-pills" id="d-stages" style="margin-top:10px"></div>
+        </div>
+        <div class="detail-tabs">
+          <button class="dtab active" onclick="switchTab('info',this)">📋 Инфо</button>
+          <button class="dtab" onclick="switchTab('contacts',this)">👥 Контакты</button>
+          <button class="dtab" onclick="switchTab('comments',this)">💬 История</button>
+          <button class="dtab" onclick="switchTab('photos',this)">📷 Фото</button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">Добавить поставщика</div>
+    <div class="form-row">
+      <label class="form-label">Название (RU) *</label>
+      <input class="form-input" id="f-name" placeholder="Название компании">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Название (CN)</label>
+      <input class="form-input" id="f-namecn" placeholder="中文名称">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <label class="form-label">Проект *</label>
+        <select class="form-input" id="f-project">
+          <option value="Аква Витебск">🌊 Аква Витебск</option>
+          <option value="DinoAlpaca Valley">🦕 DinoAlpaca Valley</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Приоритет</label>
+        <select class="form-input" id="f-priority">
+          <option value="🔥 Горячий">🔥 Горячий</option>
+          <option value="⭐ Высокий">⭐ Высокий</option>
+          <option value="— Средний" selected>— Средний</option>
+          <option value="↓ Низкий">↓ Низкий</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Категория</label>
+      <select class="form-input" id="f-cat">
+        <option>Термал / SPA</option><option>Горки / Аквапарк</option><option>IT-системы</option>
+        <option>Насосы / Бассейны</option><option>Тепловые насосы / Энергетика</option>
+        <option>Вентиляция / M&E</option><option>Дезинфекция воды</option><option>Умные локеры</option>
+        <option>Сантехника / Ванны</option><option>Отделка / Материалы</option><option>Ландшафт / Декор</option>
+        <option>Аниматронные динозавры</option><option>Детские площадки / Аттракционы</option>
+        <option>Верёвочные / Приключения</option><option>Освещение / Ночная атмосфера</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Локация</label>
+      <input class="form-input" id="f-loc" placeholder="Город, страна">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Роль в проекте</label>
+      <textarea class="form-input" id="f-role" rows="2"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Контакт (имя)</label>
+      <input class="form-input" id="f-contact" placeholder="Имя контактного лица">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <label class="form-label">Телефон</label>
+        <input class="form-input" id="f-phone">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Email / WeChat</label>
+        <input class="form-input" id="f-email">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Сайт</label>
+      <input class="form-input" id="f-web" placeholder="example.com">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Примечания</label>
+      <textarea class="form-input" id="f-note" rows="3"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">Отмена</button>
+      <button class="btn-primary" onclick="saveNewSupplier()" style="flex:1">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, addDoc, serverTimestamp, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",
+  authDomain: "fs-projects-83332.firebaseapp.com",
+  projectId: "fs-projects-83332",
+  storageBucket: "fs-projects-83332.firebasestorage.app",
+  messagingSenderId: "112584599239",
+  appId: "1:112584599239:web:bdae8199b32c8605b4c0e2",
+  measurementId: "G-2BLBSDJM29"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ── GLOBALS ──
+window._suppliers = [];
+window._curProject = 'all';
+window._curCat = 'all';
+window._selectedId = null;
+window._curTab = 'info';
+window._unsubscribe = null;
+
+const STAGES = ['Новый','КП запрошено','КП получено','Переговоры','Договор','Отказ'];
+const STAGE_COLORS = {
+  'Новый':'#6b7a99','КП запрошено':'#3b7fff','КП получено':'#0ea5e9',
+  'Переговоры':'#f59e0b','Договор':'#22c55e','Отказ':'#ff4d6d'
+};
+const CAT_ICONS = {
+  'Термал / SPA':'🌡️','Горки / Аквапарк':'🎢','IT-системы':'💻',
+  'Насосы / Бассейны':'💧','Тепловые насосы / Энергетика':'⚡',
+  'Вентиляция / M&E':'🏗️','Дезинфекция воды':'🔬','Умные локеры':'🔐',
+  'Сантехника / Ванны':'🚿','Отделка / Материалы':'🪟','Ландшафт / Декор':'🌴',
+  'Аниматронные динозавры':'🦕','Детские площадки / Аттракционы':'🎡',
+  'Верёвочные / Приключения':'🧗','Освещение / Ночная атмосфера':'💡'
+};
+
+// ── AUTH ──
+window.signIn = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent = 'Ошибка входа: ' + e.message;
+  }
+};
+window.signOut = async () => {
+  if(confirm('Выйти из системы?')) { await fbSignOut(auth); }
+};
+
+onAuthStateChanged(auth, user => {
+  if(user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const av = document.getElementById('user-avatar');
+    av.src = user.photoURL || '';
+    av.title = user.displayName + ' — Выйти';
+    startListening();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    if(window._unsubscribe) window._unsubscribe();
+  }
+});
+
+// ── FIRESTORE LISTENER ──
+function startListening() {
+  if(window._unsubscribe) window._unsubscribe();
+  const q = collection(db, 'suppliers');
+  window._unsubscribe = onSnapshot(q, snap => {
+    window._suppliers = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderSidebar();
+    renderTable();
+    if(window._selectedId) {
+      const s = window._suppliers.find(x => x.id === window._selectedId);
+      if(s) renderDetail(s);
+    }
+    updateStats();
+  });
+}
+
+// ── STATS ──
+function updateStats() {
+  const all = window._suppliers;
+  const aqua = all.filter(s => s['Проект'] === 'Аква Витебск');
+  const dino = all.filter(s => s['Проект'] === 'DinoAlpaca Valley');
+  document.getElementById('stat-all').textContent = all.length + ' компаний';
+  document.getElementById('stat-aqua').textContent = aqua.length;
+  document.getElementById('stat-dino').textContent = dino.length;
+}
+
+// ── PROJECT SWITCH ──
+window.setProject = (p) => {
+  window._curProject = p;
+  window._curCat = 'all';
+  ['all','aqua','dino'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===p);
+  });
+  renderSidebar();
+  renderTable();
+};
+
+// ── SIDEBAR ──
+function renderSidebar() {
+  const all = getFiltered(true);
+  const cats = {};
+  all.forEach(s => {
+    const c = s['Категория'] || 'Другое';
+    cats[c] = (cats[c]||0) + 1;
+  });
+
+  const el = document.getElementById('cat-list');
+  el.innerHTML = '';
+
+  // All button
+  const totalBtn = document.createElement('button');
+  totalBtn.className = 'cat-btn' + (window._curCat==='all'?' active':'');
+  totalBtn.innerHTML = `<span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-count">${all.length}</span>`;
+  totalBtn.onclick = () => { window._curCat='all'; renderSidebar(); renderTable(); };
+  el.appendChild(totalBtn);
+
+  Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (window._curCat===cat?' active':'');
+    btn.innerHTML = `<span class="cat-icon">${CAT_ICONS[cat]||'📦'}</span><span class="cat-name">${cat}</span><span class="cat-count">${cnt}</span>`;
+    btn.onclick = () => { window._curCat=cat; renderSidebar(); renderTable(); };
+    el.appendChild(btn);
+  });
+
+  // Priority stats
+  const pEl = document.getElementById('priority-stats');
+  const pMap = {'🔥 Горячий':0,'⭐ Высокий':0,'— Средний':0,'↓ Низкий':0};
+  all.forEach(s => { if(pMap[s['Приоритет']] !== undefined) pMap[s['Приоритет']]++; });
+  pEl.innerHTML = Object.entries(pMap).map(([p,c]) =>
+    `<div style="display:flex;justify-content:space-between;padding:3px 4px;font-size:11px;color:var(--muted)"><span>${p}</span><span style="background:var(--card2);padding:1px 5px;border-radius:6px">${c}</span></div>`
+  ).join('');
+}
+
+// ── FILTER ──
+function getFiltered(ignoreCat=false) {
+  let list = window._suppliers;
+  if(window._curProject === 'aqua') list = list.filter(s => s['Проект']==='Аква Витебск');
+  if(window._curProject === 'dino') list = list.filter(s => s['Проект']==='DinoAlpaca Valley');
+  if(!ignoreCat && window._curCat !== 'all') list = list.filter(s => s['Категория']===window._curCat);
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  if(q) list = list.filter(s =>
+    (s['Название (RU)']||'').toLowerCase().includes(q) ||
+    (s['Название (CN)']||'').includes(q) ||
+    (s['Контакт (имя)']||'').toLowerCase().includes(q) ||
+    (s['Категория']||'').toLowerCase().includes(q)
+  );
+  return list;
+}
+
+function priorityOrder(p) {
+  return {'🔥 Горячий':0,'⭐ Высокий':1,'— Средний':2,'↓ Низкий':3}[p]||2;
+}
+
+function priorityClass(p) {
+  return {'🔥 Горячий':'hot','⭐ Высокий':'high','— Средний':'mid','↓ Низкий':'low'}[p]||'mid';
+}
+
+// ── TABLE ──
+window.renderTable = function() {
+  const list = getFiltered().sort((a,b) => priorityOrder(a['Приоритет']) - priorityOrder(b['Приоритет']));
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('empty-state');
+
+  if(!list.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = list.map((s,i) => {
+    const proj = s['Проект']==='Аква Витебск'
+      ? `<span class="badge badge-aqua">🌊 Аква</span>`
+      : `<span class="badge badge-dino">🦕 Dino</span>`;
+    const pClass = priorityClass(s['Приоритет']);
+    const stageColor = STAGE_COLORS[s['Стадия переговоров']] || '#6b7a99';
+    const photos = (s['photos']||[]).length || (s['Фото (кол-во)']||0);
+    const isSelected = s.id === window._selectedId;
+    return `<tr class="row${isSelected?' selected':''}" onclick="selectRow('${s.id}')">
+      <td style="color:var(--muted);font-size:11px;width:32px">${i+1}</td>
+      <td>
+        <div class="company-name">${s['Название (RU)']||''}</div>
+        <div class="company-cn">${s['Название (CN)']||''}</div>
+      </td>
+      <td>${proj}</td>
+      <td style="font-size:11px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${s['Категория']||''}</td>
+      <td><span class="badge badge-${pClass}">${s['Приоритет']||''}</span></td>
+      <td>
+        <select class="stage-sel" style="color:${stageColor}" onchange="changeStage('${s.id}',this.value)" onclick="event.stopPropagation()">
+          ${STAGES.map(st => `<option value="${st}" ${s['Стадия переговоров']===st?'selected':''}>${st}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:12px;color:var(--text);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s['Контакт (имя)']||'—'}</td>
+      <td>${s['Телефон']?`<a class="tel-link" href="tel:${s['Телефон']}">${s['Телефон'].slice(0,16)}</a>`:''}</td>
+      <td>${photos>0?`<span class="photo-count">📷 ${photos}</span>`:''}</td>
+    </tr>`;
+  }).join('');
+};
+
+// ── SELECT ROW ──
+window.selectRow = function(id) {
+  window._selectedId = id;
+  const s = window._suppliers.find(x => x.id===id);
+  if(!s) return;
+  document.getElementById('detail-panel').classList.add('open');
+  renderDetail(s);
+  renderTable();
+};
+
+window.closeDetail = function() {
+  window._selectedId = null;
+  document.getElementById('detail-panel').classList.remove('open');
+  renderTable();
+};
+
+// ── DETAIL ──
+function renderDetail(s) {
+  document.getElementById('d-name').textContent = s['Название (RU)']||'';
+  document.getElementById('d-cn').textContent = (s['Название (CN)']||'') + (s['Локация']?' · '+s['Локация']:'');
+
+  const pClass = priorityClass(s['Приоритет']);
+  const proj = s['Проект']==='Аква Витебск'
+    ? `<span class="badge badge-aqua">🌊 ${s['Проект']}</span>`
+    : `<span class="badge badge-dino">🦕 ${s['Проект']}</span>`;
+  document.getElementById('d-badges').innerHTML =
+    `<span class="badge badge-${pClass}">${s['Приоритет']||''}</span>${proj}<span class="badge" style="background:var(--card2);color:var(--muted)">${CAT_ICONS[s['Категория']]||''} ${s['Категория']||''}</span>`;
+
+  // Stage pills
+  document.getElementById('d-stages').innerHTML = STAGES.map(st => {
+    const active = s['Стадия переговоров']===st;
+    const col = STAGE_COLORS[st];
+    return `<button class="stage-pill${active?' active':''}" style="${active?`border-color:${col};color:${col};background:${col}18`:''}" onclick="changeStage('${s.id}','${st}')">${st}</button>`;
+  }).join('');
+
+  renderTab(s);
+}
+
+window.switchTab = function(tab, btn) {
+  window._curTab = tab;
+  document.querySelectorAll('.dtab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const s = window._suppliers.find(x => x.id===window._selectedId);
+  if(s) renderTab(s);
+};
+
+function renderTab(s) {
+  const body = document.getElementById('detail-body');
+  if(window._curTab === 'info') {
+    body.innerHTML = `
+      ${field('Роль в проекте', s['Роль в проекте'])}
+      ${field('Продукты / Услуги', s['Продукты / Услуги'])}
+      ${s['Примечания'] ? `<div class="field-label">Примечания</div><div class="field-note">${s['Примечания']}</div>` : ''}
+      ${field('Источник', s['Источник'])}
+      ${s['Сайт'] ? `<div class="field-label">Сайт</div><div class="field-value"><a href="https://${s['Сайт']}" target="_blank" style="color:var(--accent)">${s['Сайт']}</a></div>` : ''}
+      <div style="margin-top:8px">
+        <button class="btn-primary" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="openEditModal('${s.id}')">✏️ Редактировать</button>
+      </div>
+    `;
+  } else if(window._curTab === 'contacts') {
+    const contacts = s['contacts'] || [];
+    body.innerHTML = `
+      <button class="btn-primary" style="margin-bottom:14px" onclick="openAddContact('${s.id}')">+ Добавить контакт</button>
+      ${contacts.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Контакты не добавлены</div>' :
+        contacts.map((c,i) => `
+          <div class="contact-card">
+            <button class="comment-del" onclick="deleteContact('${s.id}',${i})">✕</button>
+            <div class="contact-name">${c.name||''}</div>
+            ${c.role?`<div class="contact-role">${c.role}</div>`:''}
+            <div class="contact-links">
+              ${c.phone?`<span>📞 <a class="tel-link" href="tel:${c.phone}">${c.phone}</a></span>`:''}
+              ${c.email?`<span>✉️ <a class="tel-link" href="mailto:${c.email}">${c.email}</a></span>`:''}
+              ${c.wechat?`<span>💬 ${c.wechat}</span>`:''}
+            </div>
+          </div>
+        `).join('')}
+    `;
+  } else if(window._curTab === 'comments') {
+    const comments = s['comments'] || [];
+    body.innerHTML = `
+      ${comments.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;font-style:italic">История переговоров пуста</div>' :
+        comments.map((c,i) => `
+          <div class="comment-item">
+            <button class="comment-del" onclick="deleteComment('${s.id}',${i})">✕</button>
+            <div class="comment-meta">🕐 ${c.date||''} · ${c.author||'Вы'}</div>
+            <div class="comment-text">${c.text||''}</div>
+          </div>
+        `).join('')}
+      <textarea class="comment-input" id="comment-input" placeholder="Результат звонка, договорённости, следующий шаг..." rows="3" onkeydown="if(event.ctrlKey&&event.key==='Enter')addComment('${s.id}')"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span style="font-size:11px;color:var(--muted)">Ctrl+Enter для отправки</span>
+        <button class="btn-primary" style="width:auto;padding:7px 16px" onclick="addComment('${s.id}')">Добавить</button>
+      </div>
+    `;
+  } else if(window._curTab === 'photos') {
+    const photos = s['photos'] || [];
+    body.innerHTML = `
+      <div class="upload-zone" onclick="document.getElementById('photo-input').click()">
+        📂 Нажмите для загрузки фото или файлов
+        <div style="font-size:11px;margin-top:4px">JPG, PNG, PDF</div>
+      </div>
+      <input type="file" id="photo-input" multiple accept="image/*,.pdf" style="display:none" onchange="uploadPhotos('${s.id}',this)">
+      ${photos.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Фото не добавлены</div>' :
+        `<div class="photo-grid">${photos.map((p,i) => `
+          <div class="photo-item">
+            ${p.type && p.type.startsWith('image/') ? `<img src="${p.dataUrl}" alt="${p.name}">` : `<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">📄</div>`}
+            <button class="photo-del" onclick="deletePhoto('${s.id}',${i})">✕</button>
+            <div class="photo-name">${p.name||''}</div>
+          </div>
+        `).join('')}</div>`}
+    `;
+  }
+}
+
+function field(label, value) {
+  if(!value) return '';
+  return `<div class="field-label">${label}</div><div class="field-value">${value}</div>`;
+}
+
+// ── ACTIONS ──
+window.changeStage = async function(id, stage) {
+  await updateDoc(doc(db,'suppliers',id), {'Стадия переговоров': stage});
+  showToast('Стадия обновлена');
+};
+
+window.addComment = async function(id) {
+  const input = document.getElementById('comment-input');
+  const text = input?.value?.trim();
+  if(!text) return;
+  const s = window._suppliers.find(x => x.id===id);
+  const comments = [...(s['comments']||[])];
+  const now = new Date();
+  const date = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  comments.push({text, date, author: auth.currentUser?.displayName||'Вы'});
+  await updateDoc(doc(db,'suppliers',id), {comments});
+  showToast('Комментарий добавлен');
+};
+
+window.deleteComment = async function(id, idx) {
+  const s = window._suppliers.find(x => x.id===id);
+  const comments = [...(s['comments']||[])];
+  comments.splice(idx,1);
+  await updateDoc(doc(db,'suppliers',id), {comments});
+};
+
+window.deleteContact = async function(id, idx) {
+  const s = window._suppliers.find(x => x.id===id);
+  const contacts = [...(s['contacts']||[])];
+  contacts.splice(idx,1);
+  await updateDoc(doc(db,'suppliers',id), {contacts});
+};
+
+window.deletePhoto = async function(id, idx) {
+  const s = window._suppliers.find(x => x.id===id);
+  const photos = [...(s['photos']||[])];
+  photos.splice(idx,1);
+  await updateDoc(doc(db,'suppliers',id), {photos});
+};
+
+window.uploadPhotos = function(id, input) {
+  const files = Array.from(input.files);
+  const s = window._suppliers.find(x => x.id===id);
+  const photos = [...(s['photos']||[])];
+  let done = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      // Compress if image
+      if(file.type.startsWith('image/')) {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const maxW = 800;
+          const scale = Math.min(1, maxW/img.width);
+          canvas.width = img.width*scale;
+          canvas.height = img.height*scale;
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.75);
+          photos.push({name:file.name, type:file.type, dataUrl:compressed, size:Math.round(compressed.length*0.75)});
+          done++;
+          if(done===files.length) {
+            await updateDoc(doc(db,'suppliers',id), {photos});
+            showToast(`Загружено ${files.length} фото`);
+          }
+        };
+        img.src = e.target.result;
+      } else {
+        photos.push({name:file.name, type:file.type, dataUrl:e.target.result});
+        done++;
+        if(done===files.length) {
+          await updateDoc(doc(db,'suppliers',id), {photos});
+          showToast(`Файл загружен`);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+};
+
+window.openAddContact = function(id) {
+  const name = prompt('Имя контакта:');
+  if(!name) return;
+  const phone = prompt('Телефон:') || '';
+  const email = prompt('Email/WeChat:') || '';
+  const role = prompt('Должность:') || '';
+  const s = window._suppliers.find(x => x.id===id);
+  const contacts = [...(s['contacts']||[]), {name,phone,email,role}];
+  updateDoc(doc(db,'suppliers',id), {contacts});
+  showToast('Контакт добавлен');
+};
+
+// ── ADD SUPPLIER ──
+window.openAddModal = () => {
+  document.getElementById('add-modal').classList.add('open');
+};
+window.closeAddModal = () => {
+  document.getElementById('add-modal').classList.remove('open');
+};
+window.saveNewSupplier = async () => {
+  const name = document.getElementById('f-name').value.trim();
+  if(!name) { alert('Введите название'); return; }
+  const data = {
+    'Название (RU)': name,
+    'Название (CN)': document.getElementById('f-namecn').value,
+    'Проект': document.getElementById('f-project').value,
+    'Категория': document.getElementById('f-cat').value,
+    'Локация': document.getElementById('f-loc').value,
+    'Приоритет': document.getElementById('f-priority').value,
+    'Стадия переговоров': 'Новый',
+    'Роль в проекте': document.getElementById('f-role').value,
+    'Контакт (имя)': document.getElementById('f-contact').value,
+    'Телефон': document.getElementById('f-phone').value,
+    'Email / WeChat': document.getElementById('f-email').value,
+    'Сайт': document.getElementById('f-web').value,
+    'Примечания': document.getElementById('f-note').value,
+    'Источник': 'Добавлено вручную',
+    'comments': [], 'contacts': [], 'photos': [],
+    'createdAt': new Date().toISOString()
+  };
+  await addDoc(collection(db,'suppliers'), data);
+  closeAddModal();
+  showToast('Поставщик добавлен');
+};
+
+// ── EDIT MODAL ──
+window.openEditModal = function(id) {
+  const s = window._suppliers.find(x => x.id===id);
+  if(!s) return;
+  document.getElementById('f-name').value = s['Название (RU)']||'';
+  document.getElementById('f-namecn').value = s['Название (CN)']||'';
+  document.getElementById('f-project').value = s['Проект']||'Аква Витебск';
+  document.getElementById('f-cat').value = s['Категория']||'';
+  document.getElementById('f-loc').value = s['Локация']||'';
+  document.getElementById('f-priority').value = s['Приоритет']||'— Средний';
+  document.getElementById('f-role').value = s['Роль в проекте']||'';
+  document.getElementById('f-contact').value = s['Контакт (имя)']||'';
+  document.getElementById('f-phone').value = s['Телефон']||'';
+  document.getElementById('f-email').value = s['Email / WeChat']||'';
+  document.getElementById('f-web').value = s['Сайт']||'';
+  document.getElementById('f-note').value = s['Примечания']||'';
+
+  // Change save button to update
+  const btn = document.querySelector('.modal-actions .btn-primary');
+  btn.textContent = 'Сохранить';
+  btn.onclick = async () => {
+    const data = {
+      'Название (RU)': document.getElementById('f-name').value,
+      'Название (CN)': document.getElementById('f-namecn').value,
+      'Проект': document.getElementById('f-project').value,
+      'Категория': document.getElementById('f-cat').value,
+      'Локация': document.getElementById('f-loc').value,
+      'Приоритет': document.getElementById('f-priority').value,
+      'Роль в проекте': document.getElementById('f-role').value,
+      'Контакт (имя)': document.getElementById('f-contact').value,
+      'Телефон': document.getElementById('f-phone').value,
+      'Email / WeChat': document.getElementById('f-email').value,
+      'Сайт': document.getElementById('f-web').value,
+      'Примечания': document.getElementById('f-note').value,
+    };
+    await updateDoc(doc(db,'suppliers',id), data);
+    closeAddModal();
+    showToast('Данные сохранены');
+    btn.textContent = 'Добавить';
+    btn.onclick = saveNewSupplier;
+  };
+  document.getElementById('add-modal').classList.add('open');
+};
+
+// ── TOAST ──
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+};
+
+// Close modal on bg click
+document.getElementById('add-modal').addEventListener('click', function(e) {
+  if(e.target === this) closeAddModal();
+});
+
+</script>
+</body>
+</html>
