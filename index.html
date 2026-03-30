@@ -150,6 +150,16 @@ textarea.form-input{resize:vertical;min-height:60px}
   .search-box{width:140px}
 }
 .empty{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+.lightbox-close{position:fixed;top:20px;right:24px;color:#fff;font-size:32px;cursor:pointer;z-index:1001;line-height:1;background:rgba(0,0,0,0.5);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.lightbox-prev,.lightbox-next{position:fixed;top:50%;transform:translateY(-50%);color:#fff;font-size:28px;cursor:pointer;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;z-index:1001}
+.lightbox-prev{left:16px}
+.lightbox-next{right:16px}
+.photo-item img{cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -642,7 +652,7 @@ function renderTab(s) {
       ${photos.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Фото не добавлены</div>' :
         `<div class="photo-grid">${photos.map((p,i) => `
           <div class="photo-item">
-            ${p.type && p.type.startsWith('image/') ? `<img src="${p.dataUrl}" alt="${p.name}">` : `<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">📄</div>`}
+            ${p.type && p.type.startsWith('image/') ? `<img src="${p.dataUrl}" alt="${p.name}" onclick="(function(){var imgs=photos.filter(x=>x.type&&x.type.startsWith('image/'));openLightbox(imgs,imgs.indexOf(p));})()">` : `<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">📄</div>`}
             <button class="photo-del" onclick="deletePhoto('${s.id}',${i})">✕</button>
             <div class="photo-name">${p.name||''}</div>
           </div>
@@ -839,6 +849,43 @@ document.getElementById('add-modal').addEventListener('click', function(e) {
   if(e.target === this) closeAddModal();
 });
 
+
+// ── LIGHTBOX ──
+let _lightboxPhotos = [];
+let _lightboxIdx = 0;
+
+window.openLightbox = function(photos, idx) {
+  _lightboxPhotos = photos;
+  _lightboxIdx = idx;
+  document.getElementById('lightbox-img').src = photos[idx].dataUrl;
+  document.getElementById('lightbox').classList.add('open');
+  document.addEventListener('keydown', lightboxKey);
+};
+
+window.closeLightbox = function() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lightboxKey);
+};
+
+window.lightboxNav = function(dir) {
+  _lightboxIdx = (_lightboxIdx + dir + _lightboxPhotos.length) % _lightboxPhotos.length;
+  document.getElementById('lightbox-img').src = _lightboxPhotos[_lightboxIdx].dataUrl;
+};
+
+function lightboxKey(e) {
+  if(e.key === 'ArrowRight') lightboxNav(1);
+  if(e.key === 'ArrowLeft') lightboxNav(-1);
+  if(e.key === 'Escape') closeLightbox();
+}
+
 </script>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+  <button class="lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
+</div>
 </body>
 </html>
