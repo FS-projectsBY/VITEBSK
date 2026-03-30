@@ -7,885 +7,569 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f1117;--sidebar:#161b27;--card:#1e2535;--card2:#252d3d;
-  --border:#2a3347;--text:#e8eaf0;--muted:#6b7a99;--accent:#3b7fff;
-  --hot:#ff4d6d;--high:#f59e0b;--mid:#6b7a99;--low:#374151;
-  --aqua:#0ea5e9;--dino:#22c55e;
-  --font:'Manrope',sans-serif;
-}
+:root{--bg:#0f1117;--sidebar:#161b27;--card:#1e2535;--card2:#252d3d;--border:#2a3347;--text:#e8eaf0;--muted:#6b7a99;--accent:#3b7fff;--aqua:#0ea5e9;--dino:#22c55e;--font:'Manrope',sans-serif}
 body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
-
-/* LOGIN */
-#login-screen{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f1117 0%,#161b27 50%,#0f1117 100%)}
-.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;text-align:center;width:380px;box-shadow:0 40px 80px rgba(0,0,0,0.5)}
-.login-logo{font-size:48px;margin-bottom:16px}
-.login-title{font-size:24px;font-weight:800;margin-bottom:6px}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font)}
+#loading-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:opacity 0.4s}
+#loading-screen.hide{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-text{font-size:13px;color:var(--muted);font-weight:600}
+#login-screen{display:none;align-items:center;justify-content:center;height:100vh}
+#login-screen.show{display:flex}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;text-align:center;width:360px}
+.login-logo{font-size:44px;margin-bottom:12px}
+.login-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font)}
 .btn-google:hover{background:#2a3347;border-color:var(--accent)}
-.btn-google img{width:20px;height:20px}
-
-/* APP */
+.btn-google img{width:18px;height:18px}
+#login-error{color:#ff4d6d;font-size:11px;margin-top:10px;min-height:16px}
 #app{display:none;flex:1;overflow:hidden;flex-direction:column}
-
-/* HEADER */
-.header{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px;flex-shrink:0}
-.header-logo{font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text)}
+#app.show{display:flex}
+.header{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 16px;height:50px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header-logo{font-size:12px;font-weight:800;letter-spacing:1px;white-space:nowrap}
 .header-logo span{color:var(--accent)}
-.project-tabs{display:flex;gap:6px;margin-left:8px}
-.proj-tab{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s;font-family:var(--font)}
+.proj-tabs{display:flex;gap:5px}
+.proj-tab{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s;font-family:var(--font);white-space:nowrap}
 .proj-tab.active{border-color:var(--accent);background:rgba(59,127,255,0.1);color:var(--accent)}
 .proj-tab.aqua.active{border-color:var(--aqua);background:rgba(14,165,233,0.1);color:var(--aqua)}
 .proj-tab.dino.active{border-color:var(--dino);background:rgba(34,197,94,0.1);color:var(--dino)}
-.proj-stat{font-size:10px;font-weight:500;opacity:0.7}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.search-box{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;width:220px;font-family:var(--font);outline:none}
-.search-box::placeholder{color:var(--muted)}
-.user-avatar{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid var(--border)}
-.btn-add{padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
-
-/* MAIN LAYOUT */
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.search-box{padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;width:200px;font-family:var(--font);outline:none}
+.search-box:focus{border-color:var(--accent)}
+.btn-add{padding:6px 13px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.btn-add:hover{background:#2d6fe8}
+.user-av{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid var(--border)}
 .main{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
-.sidebar{width:210px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
-.sidebar-section{padding:14px 12px 8px}
-.sidebar-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
-.cat-btn{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:12px;text-align:left;margin-bottom:1px;transition:all 0.12s;font-family:var(--font)}
+.sidebar{width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sb-section{padding:12px 10px 6px}
+.sb-label{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.cat-btn{display:flex;align-items:center;gap:7px;width:100%;padding:5px 8px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;text-align:left;margin-bottom:1px;transition:all 0.12s;font-family:var(--font)}
 .cat-btn:hover{background:var(--card);color:var(--text)}
 .cat-btn.active{background:rgba(59,127,255,0.12);color:var(--accent)}
-.cat-btn .cat-icon{font-size:14px;flex-shrink:0;width:18px}
-.cat-btn .cat-name{flex:1;font-size:11px;line-height:1.3}
-.cat-btn .cat-count{font-size:10px;background:var(--card2);padding:1px 5px;border-radius:8px;color:var(--muted)}
-.cat-btn.active .cat-count{background:rgba(59,127,255,0.2);color:var(--accent)}
-.divider{height:1px;background:var(--border);margin:6px 12px}
-
-/* TABLE AREA */
+.cat-icon{font-size:13px;flex-shrink:0;width:16px}
+.cat-name{flex:1;font-size:10px;line-height:1.3}
+.cat-cnt{font-size:9px;background:var(--card2);padding:1px 5px;border-radius:6px;color:var(--muted);flex-shrink:0}
+.cat-btn.active .cat-cnt{background:rgba(59,127,255,0.2);color:var(--accent)}
+.sb-div{height:1px;background:var(--border);margin:5px 10px}
 .content{flex:1;display:flex;overflow:hidden}
-.table-area{flex:1;overflow-y:auto;background:var(--bg)}
+.table-wrap{flex:1;overflow-y:auto;background:var(--bg)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead{position:sticky;top:0;z-index:5;background:var(--sidebar)}
-th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap}
 tr.row{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
 tr.row:hover{background:var(--card)}
 tr.row.selected{background:rgba(59,127,255,0.07)}
-td{padding:10px 12px;vertical-align:middle}
-.company-name{font-weight:700;color:var(--text);font-size:13px}
-.company-cn{font-size:10px;color:var(--muted);margin-top:1px}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
-.badge-hot{background:rgba(255,77,109,0.15);color:#ff4d6d;border:1px solid rgba(255,77,109,0.3)}
-.badge-high{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
-.badge-mid{background:rgba(107,122,153,0.15);color:#6b7a99;border:1px solid rgba(107,122,153,0.2)}
-.badge-low{background:rgba(55,65,81,0.3);color:#6b7a99;border:1px solid rgba(55,65,81,0.3)}
-.badge-aqua{background:rgba(14,165,233,0.15);color:var(--aqua);border:1px solid rgba(14,165,233,0.2)}
-.badge-dino{background:rgba(34,197,94,0.15);color:var(--dino);border:1px solid rgba(34,197,94,0.2)}
-.stage-sel{background:transparent;border:none;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);outline:none}
-.photo-count{background:rgba(59,127,255,0.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-size:10px}
-.tel-link{color:var(--accent);text-decoration:none;font-size:11px}
-
-/* DETAIL PANEL */
+td{padding:9px 10px;vertical-align:middle}
+.co-name{font-weight:700;color:var(--text);font-size:12px;line-height:1.3}
+.co-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap}
+.b-hot{background:rgba(255,77,109,0.15);color:#ff4d6d;border:1px solid rgba(255,77,109,0.3)}
+.b-high{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.b-mid{background:rgba(107,122,153,0.12);color:#6b7a99;border:1px solid rgba(107,122,153,0.2)}
+.b-low{background:rgba(55,65,81,0.2);color:#6b7a99;border:1px solid rgba(55,65,81,0.3)}
+.b-aqua{background:rgba(14,165,233,0.15);color:var(--aqua);border:1px solid rgba(14,165,233,0.2)}
+.b-dino{background:rgba(34,197,94,0.15);color:var(--dino);border:1px solid rgba(34,197,94,0.2)}
+.pri-sel{background:transparent;border:none;cursor:pointer;font-size:10px;font-weight:700;font-family:var(--font);outline:none;padding:2px 4px;border-radius:4px}
+.pri-sel:hover{background:var(--card2)}
+.stage-sel{background:transparent;border:none;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;font-family:var(--font);outline:none;padding:2px 4px}
+.photo-cnt{background:rgba(59,127,255,0.12);color:var(--accent);border-radius:4px;padding:1px 5px;font-size:9px}
+.tel-link{color:var(--accent);text-decoration:none;font-size:10px}
+.empty-state{text-align:center;padding:60px;color:var(--muted);font-size:13px}
 .detail{width:0;border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s;flex-shrink:0}
-.detail.open{width:420px}
-.detail-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--card2);flex-shrink:0}
-.detail-name{font-size:15px;font-weight:800;color:var(--text)}
-.detail-cn{font-size:11px;color:var(--muted);margin-top:2px}
-.detail-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.detail-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.dtab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;font-family:var(--font)}
+.detail.open{width:400px}
+.det-head{padding:12px 14px;border-bottom:1px solid var(--border);background:var(--card2);flex-shrink:0;position:relative}
+.det-name{font-size:14px;font-weight:800;color:var(--text);padding-right:26px;line-height:1.3}
+.det-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.det-badges{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.det-stages{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap}
+.st-pill{padding:4px 9px;border-radius:5px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.12s;font-family:var(--font)}
+.det-close{position:absolute;right:10px;top:10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:2px 7px;cursor:pointer;font-size:13px;font-family:var(--font)}
+.det-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.dtab{flex:1;padding:9px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;font-family:var(--font)}
 .dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.detail-body{flex:1;overflow-y:auto;padding:16px}
-.detail-close{float:right;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:14px;font-family:var(--font)}
-.field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-.field-value{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px}
-.field-note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#f59e0b;line-height:1.5;margin-bottom:14px}
-.contact-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
-.contact-name{font-weight:700;font-size:13px;color:var(--text)}
-.contact-role{font-size:11px;color:var(--muted);margin-top:1px}
-.contact-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:11px}
-.stage-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
-.stage-pill{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;font-family:var(--font)}
-.stage-pill.active{border-color:var(--accent);background:rgba(59,127,255,0.12);color:var(--accent)}
-
-/* COMMENTS */
-.comment-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
-.comment-meta{font-size:10px;color:var(--muted);margin-bottom:6px}
-.comment-text{font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap}
-.comment-del{float:right;background:transparent;border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-family:var(--font)}
-.comment-input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;resize:none;font-family:var(--font);outline:none;margin-top:8px}
-.btn-primary{padding:8px 16px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;margin-top:8px}
-
-/* PHOTOS */
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.photo-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
-.photo-item img{width:100%;height:110px;object-fit:cover;display:block}
-.photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,77,109,0.9);color:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
-.photo-name{font-size:10px;color:var(--muted);padding:5px 8px;background:var(--card2)}
-.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;margin-bottom:12px;transition:border-color 0.15s}
+.det-body{flex:1;overflow-y:auto;padding:14px}
+.f-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.f-val{font-size:12px;color:var(--text);line-height:1.5;margin-bottom:12px}
+.f-note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:7px;padding:9px 11px;font-size:11px;color:#f59e0b;line-height:1.5;margin-bottom:12px}
+.contact-card{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px;margin-bottom:8px;position:relative}
+.c-name{font-weight:700;font-size:12px}
+.c-role{font-size:10px;color:var(--muted);margin-top:1px}
+.c-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;font-size:10px}
+.comment-item{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 10px;margin-bottom:7px;position:relative}
+.cm-meta{font-size:9px;color:var(--muted);margin-bottom:5px}
+.cm-text{font-size:11px;color:var(--text);line-height:1.5;white-space:pre-wrap}
+.del-btn{position:absolute;right:8px;top:8px;background:transparent;border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;border-radius:3px;padding:1px 5px;cursor:pointer;font-size:10px;font-family:var(--font)}
+.cm-input{width:100%;padding:9px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;resize:none;font-family:var(--font);outline:none;margin-top:6px}
+.cm-input:focus{border-color:var(--accent)}
+.btn-primary{padding:8px 14px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;margin-top:7px}
+.btn-primary:hover{background:#2d6fe8}
+.btn-secondary{padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font)}
+.edit-btn{width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:8px}
+.edit-btn:hover{color:var(--text);border-color:var(--accent)}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.photo-item{position:relative;border-radius:7px;overflow:hidden;border:1px solid var(--border)}
+.photo-item img{width:100%;height:100px;object-fit:cover;display:block;cursor:zoom-in;transition:opacity 0.15s}
+.photo-item img:hover{opacity:0.85}
+.photo-del{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(255,77,109,0.9);color:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center}
+.photo-fn{font-size:9px;color:var(--muted);padding:4px 7px;background:var(--card2)}
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;color:var(--muted);font-size:12px;margin-bottom:10px;transition:all 0.15s}
 .upload-zone:hover{border-color:var(--accent);color:var(--accent)}
-
-/* MODAL ADD */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:2000;align-items:center;justify-content:center}
+.lb.open{display:flex}
+.lb img{max-width:92vw;max-height:92vh;border-radius:8px;object-fit:contain}
+.lb-close{position:fixed;top:16px;right:20px;color:#fff;font-size:28px;cursor:pointer;background:rgba(0,0,0,0.5);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none}
+.lb-nav{position:fixed;top:50%;transform:translateY(-50%);color:#fff;font-size:26px;cursor:pointer;background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.lb-prev{left:12px}.lb-next{right:12px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:1000;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:500px;max-height:85vh;overflow-y:auto}
-.modal-title{font-size:16px;font-weight:800;margin-bottom:16px}
-.form-row{margin-bottom:12px}
-.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;display:block}
-.form-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font);outline:none}
-.form-input:focus{border-color:var(--accent)}
-textarea.form-input{resize:vertical;min-height:60px}
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modal-actions{display:flex;gap:10px;margin-top:16px}
-.btn-cancel{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:var(--font)}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--text);z-index:200;transform:translateY(80px);opacity:0;transition:all 0.3s}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;width:480px;max-height:88vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:800;margin-bottom:14px}
+.f-row{margin-bottom:10px}
+.f-row label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.f-inp{width:100%;padding:8px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);outline:none}
+.f-inp:focus{border-color:var(--accent)}
+textarea.f-inp{resize:vertical;min-height:55px}
+.f-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal-actions{display:flex;gap:8px;margin-top:14px}
+.modal-actions .btn-primary{flex:1;margin:0}
+.modal-actions .btn-secondary{flex:1}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:10px 16px;font-size:12px;font-weight:600;color:var(--text);z-index:3000;transform:translateY(60px);opacity:0;transition:all 0.25s;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
-
-/* MOBILE */
-@media(max-width:768px){
-  .sidebar{display:none}
-  .detail.open{width:100%;position:fixed;inset:0;z-index:50}
-  .header-logo{display:none}
-  .search-box{width:140px}
-}
-.empty{text-align:center;padding:60px;color:var(--muted);font-size:14px}
-
-/* LIGHTBOX */
-.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;align-items:center;justify-content:center;cursor:zoom-out}
-.lightbox.open{display:flex}
-.lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
-.lightbox-close{position:fixed;top:20px;right:24px;color:#fff;font-size:32px;cursor:pointer;z-index:1001;line-height:1;background:rgba(0,0,0,0.5);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
-.lightbox-prev,.lightbox-next{position:fixed;top:50%;transform:translateY(-50%);color:#fff;font-size:28px;cursor:pointer;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;z-index:1001}
-.lightbox-prev{left:16px}
-.lightbox-next{right:16px}
-.photo-item img{cursor:zoom-in}
+@media(max-width:768px){.sidebar{display:none}.detail.open{width:100%;position:fixed;inset:0;z-index:50}.header-logo{display:none}.search-box{width:130px}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
+<div id="loading-screen"><div class="spinner"></div><div class="load-text" id="load-text">Подключение...</div></div>
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">🏢</div>
     <div class="login-title">TQ CRM</div>
-    <div class="login-sub">Традиции и Качество · База поставщиков<br>Витебск 2026 · Лесковичи</div>
-    <button class="btn-google" onclick="signIn()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-      Войти через Google
-    </button>
-    <div id="login-error" style="color:#ff4d6d;font-size:12px;margin-top:12px;display:none"></div>
+    <div class="login-sub">Традиции и Качество<br>База поставщиков · Витебск 2026 · Лесковичи</div>
+    <button class="btn-google" id="btn-signin"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Войти через Google</button>
+    <div id="login-error"></div>
   </div>
 </div>
-
-<!-- APP -->
 <div id="app">
-  <!-- HEADER -->
   <div class="header">
     <div class="header-logo">TQ <span>CRM</span></div>
-    <div class="project-tabs">
-      <button class="proj-tab active" id="tab-all" onclick="setProject('all')">
-        ◉ Все &nbsp;<span class="proj-stat" id="stat-all"></span>
-      </button>
-      <button class="proj-tab aqua" id="tab-aqua" onclick="setProject('aqua')">
-        🌊 Аква Витебск &nbsp;<span class="proj-stat" id="stat-aqua"></span>
-      </button>
-      <button class="proj-tab dino" id="tab-dino" onclick="setProject('dino')">
-        🦕 DinoAlpaca &nbsp;<span class="proj-stat" id="stat-dino"></span>
-      </button>
+    <div class="proj-tabs">
+      <button class="proj-tab active" id="tab-all" onclick="setProject('all')">◉ Все <span id="cnt-all"></span></button>
+      <button class="proj-tab aqua" id="tab-aqua" onclick="setProject('aqua')">🌊 Аква <span id="cnt-aqua"></span></button>
+      <button class="proj-tab dino" id="tab-dino" onclick="setProject('dino')">🦕 DinoAlpaca <span id="cnt-dino"></span></button>
     </div>
     <div class="header-right">
-      <input class="search-box" placeholder="🔍 Поиск..." id="search-input" oninput="renderTable()">
+      <input class="search-box" id="search" placeholder="🔍 Поиск..." oninput="renderTable()">
       <button class="btn-add" onclick="openAddModal()">+ Добавить</button>
-      <img class="user-avatar" id="user-avatar" src="" title="Выйти" onclick="signOut()">
+      <img class="user-av" id="uav" src="" title="Выйти" onclick="doSignOut()">
     </div>
   </div>
-
-  <!-- MAIN -->
   <div class="main">
-    <!-- SIDEBAR -->
     <div class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Категория</div>
-        <div id="cat-list"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Приоритет</div>
-        <div id="priority-stats"></div>
-      </div>
+      <div class="sb-section"><div class="sb-label">Категория</div><div id="cat-list"></div></div>
+      <div class="sb-div"></div>
+      <div class="sb-section"><div class="sb-label">Приоритет</div><div id="pri-stats"></div></div>
     </div>
-
-    <!-- CONTENT -->
     <div class="content">
-      <div class="table-area">
+      <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Компания</th>
-              <th>Проект</th>
-              <th>Категория</th>
-              <th>Приоритет</th>
-              <th>Стадия</th>
-              <th>Контакт</th>
-              <th>Телефон</th>
-              <th>Фото</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
+          <thead><tr>
+            <th>#</th><th>Компания</th><th>Проект</th><th>Категория</th>
+            <th>Приоритет</th><th>Стадия</th><th>Контакт</th><th>Телефон</th><th>Фото</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
         </table>
-        <div id="empty-state" class="empty" style="display:none">Поставщики не найдены</div>
+        <div id="empty" class="empty-state" style="display:none">Поставщики не найдены</div>
       </div>
-
-      <!-- DETAIL PANEL -->
-      <div class="detail" id="detail-panel">
-        <div class="detail-header">
-          <button class="detail-close" onclick="closeDetail()">✕</button>
-          <div class="detail-name" id="d-name"></div>
-          <div class="detail-cn" id="d-cn"></div>
-          <div class="detail-badges" id="d-badges"></div>
-          <div class="stage-pills" id="d-stages" style="margin-top:10px"></div>
+      <div class="detail" id="det">
+        <div class="det-head">
+          <button class="det-close" onclick="closeDet()">✕</button>
+          <div class="det-name" id="det-name"></div>
+          <div class="det-sub" id="det-sub"></div>
+          <div class="det-badges" id="det-badges"></div>
+          <div class="det-stages" id="det-stages"></div>
         </div>
-        <div class="detail-tabs">
+        <div class="det-tabs">
           <button class="dtab active" onclick="switchTab('info',this)">📋 Инфо</button>
           <button class="dtab" onclick="switchTab('contacts',this)">👥 Контакты</button>
           <button class="dtab" onclick="switchTab('comments',this)">💬 История</button>
           <button class="dtab" onclick="switchTab('photos',this)">📷 Фото</button>
         </div>
-        <div class="detail-body" id="detail-body"></div>
+        <div class="det-body" id="det-body"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ADD MODAL -->
-<div class="modal-bg" id="add-modal">
+<!-- ADD/EDIT MODAL -->
+<div class="modal-bg" id="modal">
   <div class="modal">
-    <div class="modal-title">Добавить поставщика</div>
-    <div class="form-row">
-      <label class="form-label">Название (RU) *</label>
-      <input class="form-input" id="f-name" placeholder="Название компании">
+    <div class="modal-title" id="modal-title">Добавить поставщика</div>
+    <div class="f-row-2">
+      <div class="f-row"><label>Проект *</label><select class="f-inp" id="f-proj"><option value="Аква Витебск">🌊 Аква Витебск</option><option value="DinoAlpaca Valley">🦕 DinoAlpaca Valley</option></select></div>
+      <div class="f-row"><label>Приоритет</label><select class="f-inp" id="f-pri"><option value="🔥 Горячий">🔥 Горячий</option><option value="⭐ Высокий">⭐ Высокий</option><option value="— Средний" selected>— Средний</option><option value="↓ Низкий">↓ Низкий</option></select></div>
     </div>
-    <div class="form-row">
-      <label class="form-label">Название (CN)</label>
-      <input class="form-input" id="f-namecn" placeholder="中文名称">
+    <div class="f-row"><label>Название (EN/RU) *</label><input class="f-inp" id="f-name" placeholder="Company Name"></div>
+    <div class="f-row"><label>Название (CN)</label><input class="f-inp" id="f-namecn"></div>
+    <div class="f-row-2">
+      <div class="f-row"><label>Категория</label><select class="f-inp" id="f-cat"><option>Термал / SPA</option><option>Горки / Аквапарк</option><option>IT-системы</option><option>Насосы / Бассейны</option><option>Тепловые насосы / Энергетика</option><option>Вентиляция / M&E</option><option>Дезинфекция воды</option><option>Умные локеры</option><option>Сантехника / Ванны</option><option>Отделка / Материалы</option><option>Ландшафт / Декор</option><option>Аниматронные динозавры</option><option>Детские площадки / Аттракционы</option><option>Верёвочные / Приключения</option><option>Освещение / Ночная атмосфера</option></select></div>
+      <div class="f-row"><label>Локация</label><input class="f-inp" id="f-loc"></div>
     </div>
-    <div class="form-row-2">
-      <div class="form-row">
-        <label class="form-label">Проект *</label>
-        <select class="form-input" id="f-project">
-          <option value="Аква Витебск">🌊 Аква Витебск</option>
-          <option value="DinoAlpaca Valley">🦕 DinoAlpaca Valley</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Приоритет</label>
-        <select class="form-input" id="f-priority">
-          <option value="🔥 Горячий">🔥 Горячий</option>
-          <option value="⭐ Высокий">⭐ Высокий</option>
-          <option value="— Средний" selected>— Средний</option>
-          <option value="↓ Низкий">↓ Низкий</option>
-        </select>
-      </div>
+    <div class="f-row"><label>Выставка / Где познакомились</label><input class="f-inp" id="f-expo" placeholder="CAAPA Zhengzhou 2026, Tianjin SPA Expo..."></div>
+    <div class="f-row"><label>Роль в проекте</label><textarea class="f-inp" id="f-role" rows="2"></textarea></div>
+    <div class="f-row"><label>Продукты / Услуги</label><textarea class="f-inp" id="f-prod" rows="2"></textarea></div>
+    <div class="f-row"><label>Примечания</label><textarea class="f-inp" id="f-note" rows="2"></textarea></div>
+    <div class="f-row"><label>Контакт (имя)</label><input class="f-inp" id="f-contact"></div>
+    <div class="f-row-2">
+      <div class="f-row"><label>Телефон</label><input class="f-inp" id="f-phone"></div>
+      <div class="f-row"><label>Email / WeChat</label><input class="f-inp" id="f-email"></div>
     </div>
-    <div class="form-row">
-      <label class="form-label">Категория</label>
-      <select class="form-input" id="f-cat">
-        <option>Термал / SPA</option><option>Горки / Аквапарк</option><option>IT-системы</option>
-        <option>Насосы / Бассейны</option><option>Тепловые насосы / Энергетика</option>
-        <option>Вентиляция / M&E</option><option>Дезинфекция воды</option><option>Умные локеры</option>
-        <option>Сантехника / Ванны</option><option>Отделка / Материалы</option><option>Ландшафт / Декор</option>
-        <option>Аниматронные динозавры</option><option>Детские площадки / Аттракционы</option>
-        <option>Верёвочные / Приключения</option><option>Освещение / Ночная атмосфера</option>
-      </select>
+    <div class="f-row"><label>Сайт</label><input class="f-inp" id="f-web" placeholder="example.com"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-cancel-modal">Отмена</button>
+      <button class="btn-primary" id="btn-save-modal">Сохранить</button>
     </div>
-    <div class="form-row">
-      <label class="form-label">Локация</label>
-      <input class="form-input" id="f-loc" placeholder="Город, страна">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Роль в проекте</label>
-      <textarea class="form-input" id="f-role" rows="2"></textarea>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Контакт (имя)</label>
-      <input class="form-input" id="f-contact" placeholder="Имя контактного лица">
-    </div>
-    <div class="form-row-2">
-      <div class="form-row">
-        <label class="form-label">Телефон</label>
-        <input class="form-input" id="f-phone">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Email / WeChat</label>
-        <input class="form-input" id="f-email">
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Сайт</label>
-      <input class="form-input" id="f-web" placeholder="example.com">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Примечания</label>
-      <textarea class="form-input" id="f-note" rows="3"></textarea>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-bg" id="contact-modal">
+  <div class="modal" style="width:380px">
+    <div class="modal-title">Добавить контакт</div>
+    <div class="f-row"><label>Имя *</label><input class="f-inp" id="cm-name"></div>
+    <div class="f-row"><label>Должность</label><input class="f-inp" id="cm-role-inp"></div>
+    <div class="f-row-2">
+      <div class="f-row"><label>Телефон</label><input class="f-inp" id="cm-phone"></div>
+      <div class="f-row"><label>Email / WeChat</label><input class="f-inp" id="cm-email"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeAddModal()">Отмена</button>
-      <button class="btn-primary" onclick="saveNewSupplier()" style="flex:1">Добавить</button>
+      <button class="btn-secondary" id="btn-cancel-contact">Отмена</button>
+      <button class="btn-primary" id="btn-save-contact">Добавить</button>
     </div>
   </div>
 </div>
 
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="if(event.target===this)closeLB()">
+  <button class="lb-close" onclick="closeLB()">✕</button>
+  <button class="lb-nav lb-prev" onclick="navLB(-1)">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-nav lb-next" onclick="navLB(1)">›</button>
+</div>
 <div class="toast" id="toast"></div>
 
-<!-- FIREBASE -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, addDoc, serverTimestamp, query, orderBy }
-  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",
-  authDomain: "fs-projects-83332.firebaseapp.com",
-  projectId: "fs-projects-83332",
-  storageBucket: "fs-projects-83332.firebasestorage.app",
-  messagingSenderId: "112584599239",
-  appId: "1:112584599239:web:bdae8199b32c8605b4c0e2",
-  measurementId: "G-2BLBSDJM29"
+const FC={apiKey:"AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",authDomain:"fs-projects-83332.firebaseapp.com",projectId:"fs-projects-83332",storageBucket:"fs-projects-83332.firebasestorage.app",messagingSenderId:"112584599239",appId:"1:112584599239:web:bdae8199b32c8605b4c0e2"};
+const app=initializeApp(FC);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let suppliers=[],curProject='all',curCat='all',selectedId=null,curTab='info',unsub=null,editingId=null,addContactForId=null,lbPhotos=[],lbIdx=0;
+
+const STAGES=['Новый','КП запрошено','КП получено','Переговоры','Договор','Отказ'];
+const STAGE_COLORS={'Новый':'#6b7a99','КП запрошено':'#3b7fff','КП получено':'#0ea5e9','Переговоры':'#f59e0b','Договор':'#22c55e','Отказ':'#ff4d6d'};
+const PRI_CLS={'🔥 Горячий':'b-hot','⭐ Высокий':'b-high','— Средний':'b-mid','↓ Низкий':'b-low'};
+const CAT_ICONS={'Термал / SPA':'🌡️','Горки / Аквапарк':'🎢','IT-системы':'💻','Насосы / Бассейны':'💧','Тепловые насосы / Энергетика':'⚡','Вентиляция / M&E':'🏗️','Дезинфекция воды':'🔬','Умные локеры':'🔐','Сантехника / Ванны':'🚿','Отделка / Материалы':'🪟','Ландшафт / Декор':'🌴','Аниматронные динозавры':'🦕','Детские площадки / Аттракционы':'🎡','Верёвочные / Приключения':'🧗','Освещение / Ночная атмосфера':'💡'};
+
+// Strip Chinese chars for cleaner display name
+function dispName(s){
+  const ru=s['Название (RU)']||'';
+  return ru.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]+/g,'').replace(/·\s*/g,'').replace(/\s+/g,' ').trim()||ru;
+}
+
+// AUTH
+document.getElementById('btn-signin').onclick=async()=>{
+  try{await signInWithPopup(auth,new GoogleAuthProvider());}
+  catch(e){document.getElementById('login-error').textContent='Ошибка: '+e.message;}
 };
+window.doSignOut=async()=>{if(confirm('Выйти?')){await signOut(auth);}};
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// ── GLOBALS ──
-window._suppliers = [];
-window._curProject = 'all';
-window._curCat = 'all';
-window._selectedId = null;
-window._curTab = 'info';
-window._unsubscribe = null;
-
-const STAGES = ['Новый','КП запрошено','КП получено','Переговоры','Договор','Отказ'];
-const STAGE_COLORS = {
-  'Новый':'#6b7a99','КП запрошено':'#3b7fff','КП получено':'#0ea5e9',
-  'Переговоры':'#f59e0b','Договор':'#22c55e','Отказ':'#ff4d6d'
-};
-const CAT_ICONS = {
-  'Термал / SPA':'🌡️','Горки / Аквапарк':'🎢','IT-системы':'💻',
-  'Насосы / Бассейны':'💧','Тепловые насосы / Энергетика':'⚡',
-  'Вентиляция / M&E':'🏗️','Дезинфекция воды':'🔬','Умные локеры':'🔐',
-  'Сантехника / Ванны':'🚿','Отделка / Материалы':'🪟','Ландшафт / Декор':'🌴',
-  'Аниматронные динозавры':'🦕','Детские площадки / Аттракционы':'🎡',
-  'Верёвочные / Приключения':'🧗','Освещение / Ночная атмосфера':'💡'
-};
-
-// ── AUTH ──
-window.signIn = async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  } catch(e) {
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('login-error').textContent = 'Ошибка входа: ' + e.message;
-  }
-};
-window.signOut = async () => {
-  if(confirm('Выйти из системы?')) { await fbSignOut(auth); }
-};
-
-onAuthStateChanged(auth, user => {
-  if(user) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    const av = document.getElementById('user-avatar');
-    av.src = user.photoURL || '';
-    av.title = user.displayName + ' — Выйти';
+onAuthStateChanged(auth,user=>{
+  const ls=document.getElementById('loading-screen');
+  ls.classList.add('hide');
+  setTimeout(()=>ls.style.display='none',400);
+  if(user){
+    document.getElementById('login-screen').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    document.getElementById('uav').src=user.photoURL||'';
     startListening();
-  } else {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    if(window._unsubscribe) window._unsubscribe();
+  }else{
+    document.getElementById('login-screen').classList.add('show');
+    document.getElementById('app').classList.remove('show');
+    if(unsub)unsub();
   }
 });
 
-// ── FIRESTORE LISTENER ──
-function startListening() {
-  if(window._unsubscribe) window._unsubscribe();
-  const q = collection(db, 'suppliers');
-  window._unsubscribe = onSnapshot(q, snap => {
-    window._suppliers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    renderSidebar();
-    renderTable();
-    if(window._selectedId) {
-      const s = window._suppliers.find(x => x.id === window._selectedId);
-      if(s) renderDetail(s);
-    }
-    updateStats();
+function startListening(){
+  if(unsub)unsub();
+  unsub=onSnapshot(collection(db,'suppliers'),snap=>{
+    suppliers=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderSidebar();renderTable();updateStats();
+    if(selectedId){const s=suppliers.find(x=>x.id===selectedId);if(s)renderDetail(s);}
   });
 }
 
-// ── STATS ──
-function updateStats() {
-  const all = window._suppliers;
-  const aqua = all.filter(s => s['Проект'] === 'Аква Витебск');
-  const dino = all.filter(s => s['Проект'] === 'DinoAlpaca Valley');
-  document.getElementById('stat-all').textContent = all.length + ' компаний';
-  document.getElementById('stat-aqua').textContent = aqua.length;
-  document.getElementById('stat-dino').textContent = dino.length;
+function updateStats(){
+  document.getElementById('cnt-all').textContent=suppliers.length;
+  document.getElementById('cnt-aqua').textContent=suppliers.filter(s=>s['Проект']==='Аква Витебск').length;
+  document.getElementById('cnt-dino').textContent=suppliers.filter(s=>s['Проект']==='DinoAlpaca Valley').length;
 }
 
-// ── PROJECT SWITCH ──
-window.setProject = (p) => {
-  window._curProject = p;
-  window._curCat = 'all';
-  ['all','aqua','dino'].forEach(x => {
-    document.getElementById('tab-'+x).classList.toggle('active', x===p);
-  });
-  renderSidebar();
-  renderTable();
+window.setProject=p=>{
+  curProject=p;curCat='all';
+  ['all','aqua','dino'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('active',x===p));
+  renderSidebar();renderTable();
 };
 
-// ── SIDEBAR ──
-function renderSidebar() {
-  const all = getFiltered(true);
-  const cats = {};
-  all.forEach(s => {
-    const c = s['Категория'] || 'Другое';
-    cats[c] = (cats[c]||0) + 1;
-  });
-
-  const el = document.getElementById('cat-list');
-  el.innerHTML = '';
-
-  // All button
-  const totalBtn = document.createElement('button');
-  totalBtn.className = 'cat-btn' + (window._curCat==='all'?' active':'');
-  totalBtn.innerHTML = `<span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-count">${all.length}</span>`;
-  totalBtn.onclick = () => { window._curCat='all'; renderSidebar(); renderTable(); };
-  el.appendChild(totalBtn);
-
-  Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-btn' + (window._curCat===cat?' active':'');
-    btn.innerHTML = `<span class="cat-icon">${CAT_ICONS[cat]||'📦'}</span><span class="cat-name">${cat}</span><span class="cat-count">${cnt}</span>`;
-    btn.onclick = () => { window._curCat=cat; renderSidebar(); renderTable(); };
-    el.appendChild(btn);
-  });
-
-  // Priority stats
-  const pEl = document.getElementById('priority-stats');
-  const pMap = {'🔥 Горячий':0,'⭐ Высокий':0,'— Средний':0,'↓ Низкий':0};
-  all.forEach(s => { if(pMap[s['Приоритет']] !== undefined) pMap[s['Приоритет']]++; });
-  pEl.innerHTML = Object.entries(pMap).map(([p,c]) =>
-    `<div style="display:flex;justify-content:space-between;padding:3px 4px;font-size:11px;color:var(--muted)"><span>${p}</span><span style="background:var(--card2);padding:1px 5px;border-radius:6px">${c}</span></div>`
-  ).join('');
-}
-
-// ── FILTER ──
-function getFiltered(ignoreCat=false) {
-  let list = window._suppliers;
-  if(window._curProject === 'aqua') list = list.filter(s => s['Проект']==='Аква Витебск');
-  if(window._curProject === 'dino') list = list.filter(s => s['Проект']==='DinoAlpaca Valley');
-  if(!ignoreCat && window._curCat !== 'all') list = list.filter(s => s['Категория']===window._curCat);
-  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
-  if(q) list = list.filter(s =>
-    (s['Название (RU)']||'').toLowerCase().includes(q) ||
-    (s['Название (CN)']||'').includes(q) ||
-    (s['Контакт (имя)']||'').toLowerCase().includes(q) ||
-    (s['Категория']||'').toLowerCase().includes(q)
+function getFiltered(ignoreCat=false){
+  let list=suppliers;
+  if(curProject==='aqua')list=list.filter(s=>s['Проект']==='Аква Витебск');
+  if(curProject==='dino')list=list.filter(s=>s['Проект']==='DinoAlpaca Valley');
+  if(!ignoreCat&&curCat!=='all')list=list.filter(s=>s['Категория']===curCat);
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  if(q)list=list.filter(s=>
+    dispName(s).toLowerCase().includes(q)||(s['Название (CN)']||'').includes(q)||
+    (s['Контакт (имя)']||'').toLowerCase().includes(q)||(s['Категория']||'').toLowerCase().includes(q)||
+    (s['Локация']||'').toLowerCase().includes(q)
   );
   return list;
 }
 
-function priorityOrder(p) {
-  return {'🔥 Горячий':0,'⭐ Высокий':1,'— Средний':2,'↓ Низкий':3}[p]||2;
+function priOrder(p){return{'🔥 Горячий':0,'⭐ Высокий':1,'— Средний':2,'↓ Низкий':3}[p]??2;}
+
+function renderSidebar(){
+  const all=getFiltered(true);
+  const cats={};
+  all.forEach(s=>{const c=s['Категория']||'Другое';cats[c]=(cats[c]||0)+1;});
+  let html=`<button class="cat-btn${curCat==='all'?' active':''}" onclick="setCat('all')"><span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-cnt">${all.length}</span></button>`;
+  Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>{
+    html+=`<button class="cat-btn${curCat===c?' active':''}" onclick="setCat(${JSON.stringify(c)})"><span class="cat-icon">${CAT_ICONS[c]||'📦'}</span><span class="cat-name">${c}</span><span class="cat-cnt">${n}</span></button>`;
+  });
+  document.getElementById('cat-list').innerHTML=html;
+  const pm={'🔥 Горячий':0,'⭐ Высокий':0,'— Средний':0,'↓ Низкий':0};
+  all.forEach(s=>{if(pm[s['Приоритет']]!==undefined)pm[s['Приоритет']]++;});
+  document.getElementById('pri-stats').innerHTML=Object.entries(pm).map(([p,c])=>
+    `<div style="display:flex;justify-content:space-between;padding:3px 4px;font-size:10px;color:var(--muted)"><span>${p}</span><span style="background:var(--card2);padding:1px 5px;border-radius:4px">${c}</span></div>`
+  ).join('');
 }
+window.setCat=c=>{curCat=c;renderSidebar();renderTable();};
 
-function priorityClass(p) {
-  return {'🔥 Горячий':'hot','⭐ Высокий':'high','— Средний':'mid','↓ Низкий':'low'}[p]||'mid';
-}
-
-// ── TABLE ──
-window.renderTable = function() {
-  const list = getFiltered().sort((a,b) => priorityOrder(a['Приоритет']) - priorityOrder(b['Приоритет']));
-  const tbody = document.getElementById('table-body');
-  const empty = document.getElementById('empty-state');
-
-  if(!list.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+window.renderTable=()=>{
+  const list=getFiltered().sort((a,b)=>priOrder(a['Приоритет'])-priOrder(b['Приоритет']));
+  const tbody=document.getElementById('tbody');
+  const empty=document.getElementById('empty');
+  if(!list.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-
-  tbody.innerHTML = list.map((s,i) => {
-    const proj = s['Проект']==='Аква Витебск'
-      ? `<span class="badge badge-aqua">🌊 Аква</span>`
-      : `<span class="badge badge-dino">🦕 Dino</span>`;
-    const pClass = priorityClass(s['Приоритет']);
-    const stageColor = STAGE_COLORS[s['Стадия переговоров']] || '#6b7a99';
-    const photos = (s['photos']||[]).length || (s['Фото (кол-во)']||0);
-    const isSelected = s.id === window._selectedId;
-    return `<tr class="row${isSelected?' selected':''}" onclick="selectRow('${s.id}')">
-      <td style="color:var(--muted);font-size:11px;width:32px">${i+1}</td>
-      <td>
-        <div class="company-name">${s['Название (RU)']||''}</div>
-        <div class="company-cn">${s['Название (CN)']||''}</div>
-      </td>
+  tbody.innerHTML=list.map((s,i)=>{
+    const pc=PRI_CLS[s['Приоритет']]||'b-mid';
+    const sc=STAGE_COLORS[s['Стадия переговоров']]||'#6b7a99';
+    const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 Аква</span>`:`<span class="badge b-dino">🦕 Dino</span>`;
+    const ph=(s['photos']||[]).length||(s['Фото (кол-во)']||0);
+    const priOpts=['🔥 Горячий','⭐ Высокий','— Средний','↓ Низкий'].map(p=>`<option${s['Приоритет']===p?' selected':''}>${p}</option>`).join('');
+    const stOpts=STAGES.map(st=>`<option${s['Стадия переговоров']===st?' selected':''}>${st}</option>`).join('');
+    return`<tr class="row${s.id===selectedId?' selected':''}" onclick="selectRow('${s.id}')">
+      <td style="color:var(--muted);font-size:10px;width:28px">${i+1}</td>
+      <td><div class="co-name">${dispName(s)}</div><div class="co-sub">${(s['Название (CN)']||'').substring(0,35)}</div></td>
       <td>${proj}</td>
-      <td style="font-size:11px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${s['Категория']||''}</td>
-      <td><span class="badge badge-${pClass}">${s['Приоритет']||''}</span></td>
-      <td>
-        <select class="stage-sel" style="color:${stageColor}" onchange="changeStage('${s.id}',this.value)" onclick="event.stopPropagation()">
-          ${STAGES.map(st => `<option value="${st}" ${s['Стадия переговоров']===st?'selected':''}>${st}</option>`).join('')}
-        </select>
-      </td>
-      <td style="font-size:12px;color:var(--text);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s['Контакт (имя)']||'—'}</td>
-      <td>${s['Телефон']?`<a class="tel-link" href="tel:${s['Телефон']}">${s['Телефон'].slice(0,16)}</a>`:''}</td>
-      <td>${photos>0?`<span class="photo-count">📷 ${photos}</span>`:''}</td>
+      <td style="font-size:10px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${s['Категория']||''}</td>
+      <td><select class="pri-sel badge ${pc}" onchange="changePri('${s.id}',this.value)" onclick="event.stopPropagation()">${priOpts}</select></td>
+      <td><select class="stage-sel" style="color:${sc}" onchange="changeStage('${s.id}',this.value)" onclick="event.stopPropagation()">${stOpts}</select></td>
+      <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s['Контакт (имя)']||'—'}</td>
+      <td>${s['Телефон']?`<a class="tel-link" href="tel:${s['Телефон']}">${s['Телефон'].slice(0,15)}</a>`:''}</td>
+      <td>${ph>0?`<span class="photo-cnt">📷 ${ph}</span>`:''}</td>
     </tr>`;
   }).join('');
 };
 
-// ── SELECT ROW ──
-window.selectRow = function(id) {
-  window._selectedId = id;
-  const s = window._suppliers.find(x => x.id===id);
-  if(!s) return;
-  document.getElementById('detail-panel').classList.add('open');
-  renderDetail(s);
-  renderTable();
+window.changePri=async(id,val)=>{await updateDoc(doc(db,'suppliers',id),{'Приоритет':val});showToast('Приоритет обновлён');};
+window.changeStage=async(id,val)=>{await updateDoc(doc(db,'suppliers',id),{'Стадия переговоров':val});showToast('Стадия обновлена');};
+
+window.selectRow=id=>{
+  selectedId=id;
+  const s=suppliers.find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('det').classList.add('open');
+  renderDetail(s);renderTable();
 };
+window.closeDet=()=>{selectedId=null;document.getElementById('det').classList.remove('open');renderTable();};
 
-window.closeDetail = function() {
-  window._selectedId = null;
-  document.getElementById('detail-panel').classList.remove('open');
-  renderTable();
-};
-
-// ── DETAIL ──
-function renderDetail(s) {
-  document.getElementById('d-name').textContent = s['Название (RU)']||'';
-  document.getElementById('d-cn').textContent = (s['Название (CN)']||'') + (s['Локация']?' · '+s['Локация']:'');
-
-  const pClass = priorityClass(s['Приоритет']);
-  const proj = s['Проект']==='Аква Витебск'
-    ? `<span class="badge badge-aqua">🌊 ${s['Проект']}</span>`
-    : `<span class="badge badge-dino">🦕 ${s['Проект']}</span>`;
-  document.getElementById('d-badges').innerHTML =
-    `<span class="badge badge-${pClass}">${s['Приоритет']||''}</span>${proj}<span class="badge" style="background:var(--card2);color:var(--muted)">${CAT_ICONS[s['Категория']]||''} ${s['Категория']||''}</span>`;
-
-  // Stage pills
-  document.getElementById('d-stages').innerHTML = STAGES.map(st => {
-    const active = s['Стадия переговоров']===st;
-    const col = STAGE_COLORS[st];
-    return `<button class="stage-pill${active?' active':''}" style="${active?`border-color:${col};color:${col};background:${col}18`:''}" onclick="changeStage('${s.id}','${st}')">${st}</button>`;
+function renderDetail(s){
+  document.getElementById('det-name').textContent=dispName(s);
+  document.getElementById('det-sub').textContent=[(s['Название (CN)']||'').substring(0,40),s['Локация']].filter(Boolean).join(' · ');
+  const pc=PRI_CLS[s['Приоритет']]||'b-mid';
+  const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 ${s['Проект']}</span>`:`<span class="badge b-dino">🦕 ${s['Проект']}</span>`;
+  document.getElementById('det-badges').innerHTML=`<span class="badge ${pc}">${s['Приоритет']||''}</span>${proj}<span class="badge b-mid">${CAT_ICONS[s['Категория']]||''} ${s['Категория']||''}</span>`;
+  document.getElementById('det-stages').innerHTML=STAGES.map(st=>{
+    const act=s['Стадия переговоров']===st;const col=STAGE_COLORS[st];
+    return`<button class="st-pill${act?' active':''}" style="${act?`border-color:${col};color:${col};background:${col}18`:''}" onclick="changeStage('${s.id}','${st}')">${st}</button>`;
   }).join('');
-
   renderTab(s);
 }
 
-window.switchTab = function(tab, btn) {
-  window._curTab = tab;
-  document.querySelectorAll('.dtab').forEach(b => b.classList.remove('active'));
+window.switchTab=(tab,btn)=>{
+  curTab=tab;
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const s = window._suppliers.find(x => x.id===window._selectedId);
-  if(s) renderTab(s);
+  const s=suppliers.find(x=>x.id===selectedId);
+  if(s)renderTab(s);
 };
 
-function renderTab(s) {
-  const body = document.getElementById('detail-body');
-  if(window._curTab === 'info') {
-    body.innerHTML = `
-      ${field('Роль в проекте', s['Роль в проекте'])}
-      ${field('Продукты / Услуги', s['Продукты / Услуги'])}
-      ${s['Примечания'] ? `<div class="field-label">Примечания</div><div class="field-note">${s['Примечания']}</div>` : ''}
-      ${field('Источник', s['Источник'])}
-      ${s['Сайт'] ? `<div class="field-label">Сайт</div><div class="field-value"><a href="https://${s['Сайт']}" target="_blank" style="color:var(--accent)">${s['Сайт']}</a></div>` : ''}
-      <div style="margin-top:8px">
-        <button class="btn-primary" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="openEditModal('${s.id}')">✏️ Редактировать</button>
-      </div>
-    `;
-  } else if(window._curTab === 'contacts') {
-    const contacts = s['contacts'] || [];
-    body.innerHTML = `
-      <button class="btn-primary" style="margin-bottom:14px" onclick="openAddContact('${s.id}')">+ Добавить контакт</button>
-      ${contacts.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Контакты не добавлены</div>' :
-        contacts.map((c,i) => `
-          <div class="contact-card">
-            <button class="comment-del" onclick="deleteContact('${s.id}',${i})">✕</button>
-            <div class="contact-name">${c.name||''}</div>
-            ${c.role?`<div class="contact-role">${c.role}</div>`:''}
-            <div class="contact-links">
-              ${c.phone?`<span>📞 <a class="tel-link" href="tel:${c.phone}">${c.phone}</a></span>`:''}
-              ${c.email?`<span>✉️ <a class="tel-link" href="mailto:${c.email}">${c.email}</a></span>`:''}
-              ${c.wechat?`<span>💬 ${c.wechat}</span>`:''}
-            </div>
-          </div>
-        `).join('')}
-    `;
-  } else if(window._curTab === 'comments') {
-    const comments = s['comments'] || [];
-    body.innerHTML = `
-      ${comments.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;font-style:italic">История переговоров пуста</div>' :
-        comments.map((c,i) => `
-          <div class="comment-item">
-            <button class="comment-del" onclick="deleteComment('${s.id}',${i})">✕</button>
-            <div class="comment-meta">🕐 ${c.date||''} · ${c.author||'Вы'}</div>
-            <div class="comment-text">${c.text||''}</div>
-          </div>
-        `).join('')}
-      <textarea class="comment-input" id="comment-input" placeholder="Результат звонка, договорённости, следующий шаг..." rows="3" onkeydown="if(event.ctrlKey&&event.key==='Enter')addComment('${s.id}')"></textarea>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-        <span style="font-size:11px;color:var(--muted)">Ctrl+Enter для отправки</span>
-        <button class="btn-primary" style="width:auto;padding:7px 16px" onclick="addComment('${s.id}')">Добавить</button>
-      </div>
-    `;
-  } else if(window._curTab === 'photos') {
-    const photos = s['photos'] || [];
-    body.innerHTML = `
-      <div class="upload-zone" onclick="document.getElementById('photo-input').click()">
-        📂 Нажмите для загрузки фото или файлов
-        <div style="font-size:11px;margin-top:4px">JPG, PNG, PDF</div>
-      </div>
-      <input type="file" id="photo-input" multiple accept="image/*,.pdf" style="display:none" onchange="uploadPhotos('${s.id}',this)">
-      ${photos.length === 0 ? '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Фото не добавлены</div>' :
-        `<div class="photo-grid">${photos.map((p,i) => `
-          <div class="photo-item">
-            ${p.type && p.type.startsWith('image/') ? `<img src="${p.dataUrl}" alt="${p.name}" onclick="(function(){var imgs=photos.filter(x=>x.type&&x.type.startsWith('image/'));openLightbox(imgs,imgs.indexOf(p));})()">` : `<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">📄</div>`}
-            <button class="photo-del" onclick="deletePhoto('${s.id}',${i})">✕</button>
-            <div class="photo-name">${p.name||''}</div>
-          </div>
-        `).join('')}</div>`}
-    `;
+function fld(label,val,link=false){
+  if(!val)return'';
+  const v=link?`<a href="https://${val}" target="_blank" style="color:var(--accent)">${val}</a>`:val;
+  return`<div class="f-label">${label}</div><div class="f-val">${v}</div>`;
+}
+
+function renderTab(s){
+  const body=document.getElementById('det-body');
+  const expo=s['Источник выставки']||s['Источник']||'';
+  if(curTab==='info'){
+    body.innerHTML=
+      fld('Выставка',expo)+
+      fld('Роль в проекте',s['Роль в проекте'])+
+      fld('Продукты / Услуги',s['Продукты / Услуги'])+
+      (s['Примечания']?`<div class="f-label">Примечания</div><div class="f-note">${s['Примечания']}</div>`:'')+
+      fld('Сайт',s['Сайт'],true)+
+      `<button class="edit-btn" onclick="openEditModal('${s.id}')">✏️ Редактировать</button>`;
+  }else if(curTab==='contacts'){
+    const contacts=s['contacts']||[];
+    body.innerHTML=`<button class="btn-primary" style="margin-bottom:12px" onclick="openContactModal('${s.id}')">+ Добавить контакт</button>`+
+      (contacts.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Контакты не добавлены</div>':
+      contacts.map((c,i)=>`<div class="contact-card"><button class="del-btn" onclick="delContact('${s.id}',${i})">✕</button><div class="c-name">${c.name||''}</div>${c.role?`<div class="c-role">${c.role}</div>`:''}<div class="c-links">${c.phone?`<span>📞 <a class="tel-link" href="tel:${c.phone}">${c.phone}</a></span>`:''}${c.email?`<span>✉️ <a class="tel-link" href="mailto:${c.email}">${c.email}</a></span>`:''}</div></div>`).join(''));
+  }else if(curTab==='comments'){
+    const comments=s['comments']||[];
+    body.innerHTML=
+      (comments.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;font-style:italic">История переговоров пуста</div>':
+      comments.map((c,i)=>`<div class="comment-item"><button class="del-btn" onclick="delComment('${s.id}',${i})">✕</button><div class="cm-meta">🕐 ${c.date||''} · ${c.author||'Вы'}</div><div class="cm-text">${c.text||''}</div></div>`).join(''))+
+      `<textarea class="cm-input" id="cm-inp" rows="3" placeholder="Результат звонка, договорённости..."></textarea>
+       <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn-primary" style="width:auto;padding:7px 16px" onclick="addComment('${s.id}')">Добавить</button></div>`;
+  }else if(curTab==='photos'){
+    const photos=s['photos']||[];
+    body.innerHTML=`<div class="upload-zone" onclick="document.getElementById('ph-inp').click()">📂 Нажмите для загрузки фото<br><span style="font-size:10px">JPG, PNG</span></div><input type="file" id="ph-inp" multiple accept="image/*" style="display:none" onchange="uploadPhotos('${s.id}',this)">`+
+      (photos.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Фото не добавлены</div>':
+      `<div class="photo-grid">${photos.map((p,i)=>{
+        const imgs=photos.filter(x=>x.dataUrl);
+        return`<div class="photo-item"><img src="${p.dataUrl}" alt="" onclick="openLB(${JSON.stringify(imgs).replace(/"/g,'&quot;')},${imgs.indexOf(p)})"><button class="photo-del" onclick="delPhoto('${s.id}',${i})">✕</button><div class="photo-fn">${(p.name||'').substring(0,20)}</div></div>`;
+      }).join('')}</div>`);
   }
 }
 
-function field(label, value) {
-  if(!value) return '';
-  return `<div class="field-label">${label}</div><div class="field-value">${value}</div>`;
-}
-
-// ── ACTIONS ──
-window.changeStage = async function(id, stage) {
-  await updateDoc(doc(db,'suppliers',id), {'Стадия переговоров': stage});
-  showToast('Стадия обновлена');
+window.addComment=async id=>{
+  const inp=document.getElementById('cm-inp');
+  const text=inp?.value?.trim();if(!text)return;
+  const s=suppliers.find(x=>x.id===id);
+  const comments=[...(s['comments']||[])];
+  const now=new Date();
+  comments.push({text,author:auth.currentUser?.displayName||'Вы',date:now.toLocaleDateString('ru-RU')+' '+now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});
+  await updateDoc(doc(db,'suppliers',id),{comments});
+  showToast('Добавлено');
+};
+window.delComment=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['comments']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{comments:c});};
+window.delContact=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['contacts']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{contacts:c});};
+window.delPhoto=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const p=[...(s['photos']||[])];p.splice(i,1);await updateDoc(doc(db,'suppliers',id),{photos:p});};
+window.uploadPhotos=(id,input)=>{
+  const files=Array.from(input.files);
+  const s=suppliers.find(x=>x.id===id);
+  const photos=[...(s['photos']||[])];
+  let done=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const img=new Image();
+      img.onload=async()=>{
+        const canvas=document.createElement('canvas');
+        const scale=Math.min(1,900/img.width);
+        canvas.width=img.width*scale;canvas.height=img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        photos.push({name:file.name,type:file.type,dataUrl:canvas.toDataURL('image/jpeg',0.78)});
+        done++;if(done===files.length){await updateDoc(doc(db,'suppliers',id),{photos});showToast(`Загружено ${files.length} фото`);}
+      };img.src=e.target.result;
+    };reader.readAsDataURL(file);
+  });input.value='';
 };
 
-window.addComment = async function(id) {
-  const input = document.getElementById('comment-input');
-  const text = input?.value?.trim();
-  if(!text) return;
-  const s = window._suppliers.find(x => x.id===id);
-  const comments = [...(s['comments']||[])];
-  const now = new Date();
-  const date = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-  comments.push({text, date, author: auth.currentUser?.displayName||'Вы'});
-  await updateDoc(doc(db,'suppliers',id), {comments});
-  showToast('Комментарий добавлен');
+// CONTACT MODAL
+window.openContactModal=id=>{
+  addContactForId=id;
+  ['cm-name','cm-role-inp','cm-phone','cm-email'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('contact-modal').classList.add('open');
 };
-
-window.deleteComment = async function(id, idx) {
-  const s = window._suppliers.find(x => x.id===id);
-  const comments = [...(s['comments']||[])];
-  comments.splice(idx,1);
-  await updateDoc(doc(db,'suppliers',id), {comments});
-};
-
-window.deleteContact = async function(id, idx) {
-  const s = window._suppliers.find(x => x.id===id);
-  const contacts = [...(s['contacts']||[])];
-  contacts.splice(idx,1);
-  await updateDoc(doc(db,'suppliers',id), {contacts});
-};
-
-window.deletePhoto = async function(id, idx) {
-  const s = window._suppliers.find(x => x.id===id);
-  const photos = [...(s['photos']||[])];
-  photos.splice(idx,1);
-  await updateDoc(doc(db,'suppliers',id), {photos});
-};
-
-window.uploadPhotos = function(id, input) {
-  const files = Array.from(input.files);
-  const s = window._suppliers.find(x => x.id===id);
-  const photos = [...(s['photos']||[])];
-  let done = 0;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      // Compress if image
-      if(file.type.startsWith('image/')) {
-        const img = new Image();
-        img.onload = async () => {
-          const canvas = document.createElement('canvas');
-          const maxW = 800;
-          const scale = Math.min(1, maxW/img.width);
-          canvas.width = img.width*scale;
-          canvas.height = img.height*scale;
-          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.75);
-          photos.push({name:file.name, type:file.type, dataUrl:compressed, size:Math.round(compressed.length*0.75)});
-          done++;
-          if(done===files.length) {
-            await updateDoc(doc(db,'suppliers',id), {photos});
-            showToast(`Загружено ${files.length} фото`);
-          }
-        };
-        img.src = e.target.result;
-      } else {
-        photos.push({name:file.name, type:file.type, dataUrl:e.target.result});
-        done++;
-        if(done===files.length) {
-          await updateDoc(doc(db,'suppliers',id), {photos});
-          showToast(`Файл загружен`);
-        }
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value='';
-};
-
-window.openAddContact = function(id) {
-  const name = prompt('Имя контакта:');
-  if(!name) return;
-  const phone = prompt('Телефон:') || '';
-  const email = prompt('Email/WeChat:') || '';
-  const role = prompt('Должность:') || '';
-  const s = window._suppliers.find(x => x.id===id);
-  const contacts = [...(s['contacts']||[]), {name,phone,email,role}];
-  updateDoc(doc(db,'suppliers',id), {contacts});
+document.getElementById('btn-cancel-contact').onclick=()=>document.getElementById('contact-modal').classList.remove('open');
+document.getElementById('btn-save-contact').onclick=async()=>{
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){showToast('Введите имя');return;}
+  const s=suppliers.find(x=>x.id===addContactForId);if(!s)return;
+  const contacts=[...(s['contacts']||[]),{name,role:document.getElementById('cm-role-inp').value,phone:document.getElementById('cm-phone').value,email:document.getElementById('cm-email').value}];
+  await updateDoc(doc(db,'suppliers',addContactForId),{contacts});
+  document.getElementById('contact-modal').classList.remove('open');
   showToast('Контакт добавлен');
 };
+document.getElementById('contact-modal').onclick=e=>{if(e.target===document.getElementById('contact-modal'))document.getElementById('contact-modal').classList.remove('open');};
 
-// ── ADD SUPPLIER ──
-window.openAddModal = () => {
-  document.getElementById('add-modal').classList.add('open');
+// ADD/EDIT MODAL
+window.openAddModal=()=>{
+  editingId=null;
+  document.getElementById('modal-title').textContent='Добавить поставщика';
+  document.getElementById('btn-save-modal').textContent='Добавить';
+  ['f-name','f-namecn','f-loc','f-expo','f-role','f-prod','f-note','f-contact','f-phone','f-email','f-web'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-proj').value='Аква Витебск';
+  document.getElementById('f-pri').value='— Средний';
+  document.getElementById('f-cat').selectedIndex=0;
+  document.getElementById('modal').classList.add('open');
 };
-window.closeAddModal = () => {
-  document.getElementById('add-modal').classList.remove('open');
+window.openEditModal=id=>{
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
+  editingId=id;
+  document.getElementById('modal-title').textContent='Редактировать';
+  document.getElementById('btn-save-modal').textContent='Сохранить';
+  document.getElementById('f-name').value=s['Название (RU)']||'';
+  document.getElementById('f-namecn').value=s['Название (CN)']||'';
+  document.getElementById('f-proj').value=s['Проект']||'Аква Витебск';
+  document.getElementById('f-cat').value=s['Категория']||'';
+  document.getElementById('f-loc').value=s['Локация']||'';
+  document.getElementById('f-pri').value=s['Приоритет']||'— Средний';
+  document.getElementById('f-expo').value=s['Источник выставки']||s['Источник']||'';
+  document.getElementById('f-role').value=s['Роль в проекте']||'';
+  document.getElementById('f-prod').value=s['Продукты / Услуги']||'';
+  document.getElementById('f-note').value=s['Примечания']||'';
+  document.getElementById('f-contact').value=s['Контакт (имя)']||'';
+  document.getElementById('f-phone').value=s['Телефон']||'';
+  document.getElementById('f-email').value=s['Email / WeChat']||'';
+  document.getElementById('f-web').value=s['Сайт']||'';
+  document.getElementById('modal').classList.add('open');
 };
-window.saveNewSupplier = async () => {
-  const name = document.getElementById('f-name').value.trim();
-  if(!name) { alert('Введите название'); return; }
-  const data = {
-    'Название (RU)': name,
-    'Название (CN)': document.getElementById('f-namecn').value,
-    'Проект': document.getElementById('f-project').value,
-    'Категория': document.getElementById('f-cat').value,
-    'Локация': document.getElementById('f-loc').value,
-    'Приоритет': document.getElementById('f-priority').value,
-    'Стадия переговоров': 'Новый',
-    'Роль в проекте': document.getElementById('f-role').value,
-    'Контакт (имя)': document.getElementById('f-contact').value,
-    'Телефон': document.getElementById('f-phone').value,
-    'Email / WeChat': document.getElementById('f-email').value,
-    'Сайт': document.getElementById('f-web').value,
-    'Примечания': document.getElementById('f-note').value,
-    'Источник': 'Добавлено вручную',
-    'comments': [], 'contacts': [], 'photos': [],
-    'createdAt': new Date().toISOString()
-  };
-  await addDoc(collection(db,'suppliers'), data);
-  closeAddModal();
-  showToast('Поставщик добавлен');
+document.getElementById('btn-cancel-modal').onclick=()=>document.getElementById('modal').classList.remove('open');
+document.getElementById('btn-save-modal').onclick=async()=>{
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('Введите название');return;}
+  const data={'Название (RU)':name,'Название (CN)':document.getElementById('f-namecn').value,'Проект':document.getElementById('f-proj').value,'Категория':document.getElementById('f-cat').value,'Локация':document.getElementById('f-loc').value,'Приоритет':document.getElementById('f-pri').value,'Источник выставки':document.getElementById('f-expo').value,'Роль в проекте':document.getElementById('f-role').value,'Продукты / Услуги':document.getElementById('f-prod').value,'Примечания':document.getElementById('f-note').value,'Контакт (имя)':document.getElementById('f-contact').value,'Телефон':document.getElementById('f-phone').value,'Email / WeChat':document.getElementById('f-email').value,'Сайт':document.getElementById('f-web').value};
+  try{
+    if(editingId){
+      await updateDoc(doc(db,'suppliers',editingId),data);
+      showToast('Сохранено');
+    }else{
+      data['Стадия переговоров']='Новый';data['comments']=[];data['contacts']=[];data['photos']=[];data['createdAt']=serverTimestamp();
+      const ref=await addDoc(collection(db,'suppliers'),data);
+      selectedId=ref.id;
+      showToast('Поставщик добавлен');
+    }
+    document.getElementById('modal').classList.remove('open');
+  }catch(e){showToast('Ошибка: '+e.message);}
 };
+document.getElementById('modal').onclick=e=>{if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');};
 
-// ── EDIT MODAL ──
-window.openEditModal = function(id) {
-  const s = window._suppliers.find(x => x.id===id);
-  if(!s) return;
-  document.getElementById('f-name').value = s['Название (RU)']||'';
-  document.getElementById('f-namecn').value = s['Название (CN)']||'';
-  document.getElementById('f-project').value = s['Проект']||'Аква Витебск';
-  document.getElementById('f-cat').value = s['Категория']||'';
-  document.getElementById('f-loc').value = s['Локация']||'';
-  document.getElementById('f-priority').value = s['Приоритет']||'— Средний';
-  document.getElementById('f-role').value = s['Роль в проекте']||'';
-  document.getElementById('f-contact').value = s['Контакт (имя)']||'';
-  document.getElementById('f-phone').value = s['Телефон']||'';
-  document.getElementById('f-email').value = s['Email / WeChat']||'';
-  document.getElementById('f-web').value = s['Сайт']||'';
-  document.getElementById('f-note').value = s['Примечания']||'';
+// LIGHTBOX
+window.openLB=(photos,idx)=>{lbPhotos=photos;lbIdx=idx;document.getElementById('lb-img').src=photos[idx].dataUrl;document.getElementById('lb').classList.add('open');document.addEventListener('keydown',lbKey);};
+window.closeLB=()=>{document.getElementById('lb').classList.remove('open');document.removeEventListener('keydown',lbKey);};
+window.navLB=dir=>{lbIdx=(lbIdx+dir+lbPhotos.length)%lbPhotos.length;document.getElementById('lb-img').src=lbPhotos[lbIdx].dataUrl;};
+function lbKey(e){if(e.key==='ArrowRight')navLB(1);if(e.key==='ArrowLeft')navLB(-1);if(e.key==='Escape')closeLB();}
 
-  // Change save button to update
-  const btn = document.querySelector('.modal-actions .btn-primary');
-  btn.textContent = 'Сохранить';
-  btn.onclick = async () => {
-    const data = {
-      'Название (RU)': document.getElementById('f-name').value,
-      'Название (CN)': document.getElementById('f-namecn').value,
-      'Проект': document.getElementById('f-project').value,
-      'Категория': document.getElementById('f-cat').value,
-      'Локация': document.getElementById('f-loc').value,
-      'Приоритет': document.getElementById('f-priority').value,
-      'Роль в проекте': document.getElementById('f-role').value,
-      'Контакт (имя)': document.getElementById('f-contact').value,
-      'Телефон': document.getElementById('f-phone').value,
-      'Email / WeChat': document.getElementById('f-email').value,
-      'Сайт': document.getElementById('f-web').value,
-      'Примечания': document.getElementById('f-note').value,
-    };
-    await updateDoc(doc(db,'suppliers',id), data);
-    closeAddModal();
-    showToast('Данные сохранены');
-    btn.textContent = 'Добавить';
-    btn.onclick = saveNewSupplier;
-  };
-  document.getElementById('add-modal').classList.add('open');
-};
-
-// ── TOAST ──
-window.showToast = function(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = '✓ ' + msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-};
-
-// Close modal on bg click
-document.getElementById('add-modal').addEventListener('click', function(e) {
-  if(e.target === this) closeAddModal();
-});
-
-
-// ── LIGHTBOX ──
-let _lightboxPhotos = [];
-let _lightboxIdx = 0;
-
-window.openLightbox = function(photos, idx) {
-  _lightboxPhotos = photos;
-  _lightboxIdx = idx;
-  document.getElementById('lightbox-img').src = photos[idx].dataUrl;
-  document.getElementById('lightbox').classList.add('open');
-  document.addEventListener('keydown', lightboxKey);
-};
-
-window.closeLightbox = function() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.removeEventListener('keydown', lightboxKey);
-};
-
-window.lightboxNav = function(dir) {
-  _lightboxIdx = (_lightboxIdx + dir + _lightboxPhotos.length) % _lightboxPhotos.length;
-  document.getElementById('lightbox-img').src = _lightboxPhotos[_lightboxIdx].dataUrl;
-};
-
-function lightboxKey(e) {
-  if(e.key === 'ArrowRight') lightboxNav(1);
-  if(e.key === 'ArrowLeft') lightboxNav(-1);
-  if(e.key === 'Escape') closeLightbox();
-}
-
+// TOAST
+window.showToast=msg=>{const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
 </script>
-
-<!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
-  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
-  <button class="lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">‹</button>
-  <img id="lightbox-img" src="" alt="">
-  <button class="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
-</div>
 </body>
 </html>
