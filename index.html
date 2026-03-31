@@ -13,6 +13,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 #loading-screen.hide{opacity:0;pointer-events:none}
 .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spinner-txt{animation:pulse 1.5s infinite ease-in-out}
+@keyframes pulse{50%{opacity:0.4}}
 .load-text{font-size:13px;color:var(--muted);font-weight:600}
 #login-screen{display:none;align-items:center;justify-content:center;height:100vh}
 #login-screen.show{display:flex}
@@ -146,7 +148,21 @@ textarea.f-inp{resize:vertical;min-height:55px}
 .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
 .spinner-txt{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0.5px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spinner-txt{animation:pulse 1.5s infinite ease-in-out}
+@keyframes pulse{50%{opacity:0.4}}
+
+/* DRAWER */
+.drawer{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--sidebar);z-index:500;transform:translateX(-100%);transition:transform 0.25s;overflow-y:auto;border-right:1px solid var(--border)}
+.drawer.open{transform:translateX(0)}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:499;display:none}
+.drawer-overlay.open{display:block}
+.btn-filters{display:none;padding:7px 12px;border-radius:8px;border:none;background:var(--card2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+@media(max-width:768px){.btn-filters{display:block}.sidebar{display:none}}
+
+.btn-export{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.btn-export:hover{border-color:var(--accent);color:var(--accent)}
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="loading-screen"><div class="spinner"></div><div class="load-text" id="load-text">Подключение...</div></div>
@@ -170,7 +186,9 @@ textarea.f-inp{resize:vertical;min-height:55px}
       <button class="proj-tab dino" id="tab-dino" onclick="setProject('dino')">🦕 DinoAlpaca <span id="cnt-dino"></span></button>
     </div>
     <div class="header-right">
+      <button class="btn-filters" onclick="toggleFilters()">☰ Фильтры</button>
       <input class="search-box" id="search" placeholder="🔍 Поиск..." oninput="renderTable()">
+      <button class="btn-export" onclick="exportExcel()">⬇ Excel</button>
       <button class="btn-add" onclick="openAddModal()">+ Добавить</button>
       <img class="user-av" id="uav" src="" title="Выйти" onclick="doSignOut()">
     </div>
@@ -272,7 +290,7 @@ textarea.f-inp{resize:vertical;min-height:55px}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,updateDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",authDomain:"fs-projects-83332.firebaseapp.com",projectId:"fs-projects-83332",storageBucket:"fs-projects-83332.firebasestorage.app",messagingSenderId:"112584599239",appId:"1:112584599239:web:bdae8199b32c8605b4c0e2"};
 const app=initializeApp(FC);
@@ -288,8 +306,8 @@ const CAT_ICONS={'Термал / SPA':'🌡️','Горки / Аквапарк':
 
 // Strip Chinese chars for cleaner display name
 function dispName(s){
-  const ru=s['Название (RU)']||'';
-  return ru.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]+/g,'').replace(/·\s*/g,'').replace(/\s+/g,' ').trim()||ru;
+  const ru=s['Название (RU)']||s['Название (CN)']||'Без названия';
+  return ru.replace(/[\u4e00-\u9fff·【】]/g,'').replace(/\s+/g,' ').trim()||s['Название (CN)']||'Без названия';
 }
 
 // AUTH
@@ -321,13 +339,26 @@ function startListening(){
   if(sp){sp.classList.remove('hide');}
 
   if(unsub)unsub();
-  unsub=onSnapshot(collection(db,'suppliers'),snap=>{
-    suppliers=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderSidebar();renderTable();updateStats();
-    // Hide spinner
-    (function(){const sp=document.getElementById('spinner');if(sp)sp.classList.add('hide');})();
-    if(selectedId){const s=suppliers.find(x=>x.id===selectedId);if(s)renderDetail(s);}
-  });
+  let isFirstLoad=true;
+  unsub=onSnapshot(
+    collection(db,'suppliers'),
+    snap=>{
+      suppliers=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderSidebar();renderTable();updateStats();
+      if(isFirstLoad){
+        isFirstLoad=false;
+        const sp=document.getElementById('spinner');
+        if(sp)sp.classList.add('hide');
+      }
+      if(selectedId){const s=suppliers.find(x=>x.id===selectedId);if(s)renderDetail(s);else closeDet();}
+    },
+    err=>{
+      const sp=document.getElementById('spinner');
+      if(sp)sp.classList.add('hide');
+      console.error('Firestore error:',err);
+      showToast('Ошибка загрузки данных. Обнови страницу.');
+    }
+  );
 }
 
 function updateStats(){
@@ -349,24 +380,54 @@ function getFiltered(ignoreCat=false){
   if(!ignoreCat&&curCat!=='all')list=list.filter(s=>s['Категория']===curCat);
   const q=(document.getElementById('search')?.value||'').toLowerCase();
   if(q)list=list.filter(s=>
-    dispName(s).toLowerCase().includes(q)||(s['Название (CN)']||'').includes(q)||
-    (s['Контакт (имя)']||'').toLowerCase().includes(q)||(s['Категория']||'').toLowerCase().includes(q)||
-    (s['Локация']||'').toLowerCase().includes(q)
-  );
+      [
+        dispName(s),
+        s['Название (CN)'],
+        s['Контакт (имя)'],
+        s['Категория'],
+        s['Локация'],
+        s['Сайт'],
+        s['Email / WeChat'],
+        s['Телефон'],
+        s['Роль в проекте'],
+        s['Продукты / Услуги'],
+        s['Примечания'],
+        s['Источник выставки'],
+        s['Источник']
+      ].filter(Boolean).some(v=>String(v).toLowerCase().includes(q))
+    );
   return list;
 }
 
 function priOrder(p){return{'🔥 Горячий':0,'⭐ Высокий':1,'— Средний':2,'↓ Низкий':3}[p]??2;}
 
+function bindCatButtons(scope){
+  if(!scope)return;
+  scope.querySelectorAll('.cat-btn[data-cat]').forEach(btn=>{
+    btn.onclick=()=>{
+      let _cat;try{_cat=decodeURIComponent(btn.dataset.cat);}catch{_cat=btn.dataset.cat;}setCat(_cat);
+      const dr=document.getElementById('drawer');
+      if(dr && dr.classList.contains('open')) toggleFilters();
+    };
+  });
+}
+
 function renderSidebar(){
   const all=getFiltered(true);
   const cats={};
-  all.forEach(s=>{const c=s['Категория']||'Другое';cats[c]=(cats[c]||0)+1;});
-  let html=`<button class="cat-btn${curCat==='all'?' active':''}" onclick="setCat('all')"><span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-cnt">${all.length}</span></button>`;
+  all.forEach(s=>{const c=(s['Категория']||'').trim()||'Другое';cats[c]=(cats[c]||0)+1;});
+  let html=`<button class="cat-btn${curCat==='all'?' active':''}" data-cat="all"><span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-cnt">${all.length}</span></button>`;
   Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>{
-    html+=`<button class="cat-btn${curCat===c?' active':''}" onclick="setCat(${JSON.stringify(c)})"><span class="cat-icon">${CAT_ICONS[c]||'📦'}</span><span class="cat-name">${c}</span><span class="cat-cnt">${n}</span></button>`;
+    html+=`<button class="cat-btn${encodeURIComponent(curCat)===encodeURIComponent(c)?' active':''}" data-cat="${encodeURIComponent(c)}"><span class="cat-icon">${CAT_ICONS[c]||'📦'}</span><span class="cat-name">${safeText(c)}</span><span class="cat-cnt">${n}</span></button>`;
   });
   document.getElementById('cat-list').innerHTML=html;
+  bindCatButtons(document.getElementById('cat-list'));
+
+  const dr=document.getElementById('drawer');
+  if(dr){
+    dr.innerHTML=html;
+    bindCatButtons(dr);
+  }
   const pm={'🔥 Горячий':0,'⭐ Высокий':0,'— Средний':0,'↓ Низкий':0};
   all.forEach(s=>{if(pm[s['Приоритет']]!==undefined)pm[s['Приоритет']]++;});
   document.getElementById('pri-stats').innerHTML=Object.entries(pm).map(([p,c])=>
@@ -384,19 +445,19 @@ window.renderTable=()=>{
   tbody.innerHTML=list.map((s,i)=>{
     const pc=PRI_CLS[s['Приоритет']]||'b-mid';
     const sc=STAGE_COLORS[s['Стадия переговоров']]||'#6b7a99';
-    const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 Аква</span>`:`<span class="badge b-dino">🦕 Dino</span>`;
-    const ph=(s['photos']||[]).length||(s['Фото (кол-во)']||0);
+    const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 Аква</span>`:s['Проект']==='DinoAlpaca Valley'?`<span class="badge b-dino">🦕 Dino</span>`:`<span class="badge b-mid">${safeText(s['Проект']||'—')}</span>`;
+    const ph=(s['photos']||[]).filter(x=>x&&x.dataUrl).length||(s['Фото (кол-во)']||0);
     const priOpts=['🔥 Горячий','⭐ Высокий','— Средний','↓ Низкий'].map(p=>`<option${s['Приоритет']===p?' selected':''}>${p}</option>`).join('');
     const stOpts=STAGES.map(st=>`<option${s['Стадия переговоров']===st?' selected':''}>${st}</option>`).join('');
     return`<tr class="row${s.id===selectedId?' selected':''}" onclick="selectRow('${s.id}')">
       <td style="color:var(--muted);font-size:10px;width:28px">${i+1}</td>
-      <td><div class="co-name">${dispName(s)}</div><div class="co-sub">${(s['Название (CN)']||'').substring(0,35)}</div></td>
+      <td><div class="co-name">${safeText(dispName(s))}</div><div class="co-sub">${safeText((s['Название (CN)']||'').substring(0,35))}</div></td>
       <td>${proj}</td>
-      <td style="font-size:10px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${s['Категория']||''}</td>
-      <td><select class="pri-sel badge ${pc}" onchange="changePri('${s.id}',this.value)" onclick="event.stopPropagation()">${priOpts}</select></td>
-      <td><select class="stage-sel" style="color:${sc}" onchange="changeStage('${s.id}',this.value)" onclick="event.stopPropagation()">${stOpts}</select></td>
-      <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s['Контакт (имя)']||'—'}</td>
-      <td>${s['Телефон']?`<a class="tel-link" href="tel:${s['Телефон']}">${s['Телефон'].slice(0,15)}</a>`:''}</td>
+      <td style="font-size:10px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${safeText(s['Категория']||'')}</td>
+      <td><select class="pri-sel badge ${pc}" onchange="changePri('${s.id}',this.value)" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">${priOpts}</select></td>
+      <td><select class="stage-sel" style="color:${sc}" onchange="changeStage('${s.id}',this.value)" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">${stOpts}</select></td>
+      <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeText(s['Контакт (имя)']||'—')}</td>
+      <td>${s['Телефон']?`<a class="tel-link" href="tel:${String(s['Телефон']||'').replace(/[^\d+]/g,'')}">${safeText(String(s['Телефон']||'').slice(0,15))}</a>`:''}</td>
       <td>${ph>0?`<span class="photo-cnt">📷 ${ph}</span>`:''}</td>
     </tr>`;
   }).join('');
@@ -418,8 +479,8 @@ function renderDetail(s){
   document.getElementById('det-name').textContent=dispName(s);
   document.getElementById('det-sub').textContent=[(s['Название (CN)']||'').substring(0,40),s['Локация']].filter(Boolean).join(' · ');
   const pc=PRI_CLS[s['Приоритет']]||'b-mid';
-  const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 ${s['Проект']}</span>`:`<span class="badge b-dino">🦕 ${s['Проект']}</span>`;
-  document.getElementById('det-badges').innerHTML=`<span class="badge ${pc}">${s['Приоритет']||''}</span>${proj}<span class="badge b-mid">${CAT_ICONS[s['Категория']]||''} ${s['Категория']||''}</span>`;
+  const proj=s['Проект']==='Аква Витебск'?`<span class="badge b-aqua">🌊 ${safeText(s['Проект'])}</span>`:s['Проект']==='DinoAlpaca Valley'?`<span class="badge b-dino">🦕 ${safeText(s['Проект'])}</span>`:`<span class="badge b-mid">${safeText(s['Проект']||'—')}</span>`;
+  document.getElementById('det-badges').innerHTML=`<span class="badge ${pc}">${safeText(s['Приоритет']||'')}</span>${proj}<span class="badge b-mid">${CAT_ICONS[s['Категория']]||''} ${safeText(s['Категория']||'')}</span>`;
   document.getElementById('det-stages').innerHTML=STAGES.map(st=>{
     const act=s['Стадия переговоров']===st;const col=STAGE_COLORS[st];
     return`<button class="st-pill${act?' active':''}" style="${act?`border-color:${col};color:${col};background:${col}18`:''}" onclick="changeStage('${s.id}','${st}')">${st}</button>`;
@@ -435,10 +496,34 @@ window.switchTab=(tab,btn)=>{
   if(s)renderTab(s);
 };
 
+
+// ── HELPERS ──
+function escapeHtml(str=''){
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function safeText(v=''){return escapeHtml(String(v||''));}
+function isEmail(v=''){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).trim());}
+function normalizeUrl(val=''){
+  const s=String(val).trim();
+  if(!s)return'';
+  if(/^https?:\/\//i.test(s))return s;
+  return'https://'+s;
+}
+
 function fld(label,val,link=false){
   if(!val)return'';
-  const v=link?`<a href="https://${val}" target="_blank" style="color:var(--accent)">${val}</a>`:val;
-  return`<div class="f-label">${label}</div><div class="f-val">${v}</div>`;
+  const safeLabel=escapeHtml(label);
+  const safeVal=escapeHtml(String(val));
+  if(link){
+    const href=normalizeUrl(val);
+    return`<div class="f-label">${safeLabel}</div><div class="f-val"><a href="${href}" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">${safeVal}</a></div>`;
+  }
+  return`<div class="f-label">${safeLabel}</div><div class="f-val">${safeVal}</div>`;
 }
 
 function renderTab(s){
@@ -449,28 +534,28 @@ function renderTab(s){
       fld('Выставка',expo)+
       fld('Роль в проекте',s['Роль в проекте'])+
       fld('Продукты / Услуги',s['Продукты / Услуги'])+
-      (s['Примечания']?`<div class="f-label">Примечания</div><div class="f-note">${s['Примечания']}</div>`:'')+
+      (s['Примечания']?`<div class="f-label">Примечания</div><div class="f-note">${safeText(s['Примечания'])}</div>`:'')+
       fld('Сайт',s['Сайт'],true)+
       `<button class="edit-btn" onclick="openEditModal('${s.id}')">✏️ Редактировать</button>`;
   }else if(curTab==='contacts'){
     const contacts=s['contacts']||[];
     body.innerHTML=`<button class="btn-primary" style="margin-bottom:12px" onclick="openContactModal('${s.id}')">+ Добавить контакт</button>`+
       (contacts.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Контакты не добавлены</div>':
-      contacts.map((c,i)=>`<div class="contact-card"><button class="del-btn" onclick="delContact('${s.id}',${i})">✕</button><div class="c-name">${c.name||''}</div>${c.role?`<div class="c-role">${c.role}</div>`:''}<div class="c-links">${c.phone?`<span>📞 <a class="tel-link" href="tel:${c.phone}">${c.phone}</a></span>`:''}${c.email?`<span>✉️ <a class="tel-link" href="mailto:${c.email}">${c.email}</a></span>`:''}</div></div>`).join(''));
+      contacts.map((c,i)=>`<div class="contact-card"><button class="del-btn" onclick="delContact('${s.id}',${i})">✕</button><div class="c-name">${safeText(c.name||'')} </div>${c.role?`<div class="c-role">${safeText(c.role)}</div>`:''}<div class="c-links">${c.phone?`<span>📞 <a class="tel-link" href="tel:${String(c.phone||'').replace(/[^\d+]/g,'')}">${safeText(c.phone)}</a></span>`:''}${c.email?(isEmail(c.email)?`<span>✉️ <a class="tel-link" href="mailto:${encodeURIComponent(c.email)}">${safeText(c.email)}</a></span>`:`<span>💬 WeChat: ${safeText(c.email)}</span>`):''}</div></div>`).join(''));
   }else if(curTab==='comments'){
     const comments=s['comments']||[];
     body.innerHTML=
       (comments.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;font-style:italic">История переговоров пуста</div>':
-      comments.map((c,i)=>`<div class="comment-item"><button class="del-btn" onclick="delComment('${s.id}',${i})">✕</button><div class="cm-meta">🕐 ${c.date||''} · ${c.author||'Вы'}</div><div class="cm-text">${c.text||''}</div></div>`).join(''))+
+      comments.map((c,i)=>`<div class="comment-item"><button class="del-btn" onclick="delComment('${s.id}',${i})">✕</button><div class="cm-meta">🕐 ${safeText(c.date||'')} · ${safeText(c.author||'Вы')}</div><div class="cm-text">${safeText(c.text||'')}</div></div>`).join(''))+
       `<textarea class="cm-input" id="cm-inp" rows="3" placeholder="Результат звонка, договорённости..."></textarea>
        <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn-primary" style="width:auto;padding:7px 16px" onclick="addComment('${s.id}')">Добавить</button></div>`;
   }else if(curTab==='photos'){
-    const photos=s['photos']||[];
-    body.innerHTML=`<div class="upload-zone" onclick="document.getElementById('ph-inp').click()">📂 Нажмите для загрузки фото<br><span style="font-size:10px">JPG, PNG</span></div><input type="file" id="ph-inp" multiple accept="image/*" style="display:none" onchange="uploadPhotos('${s.id}',this)">`+
+    const photos=(s['photos']||[]).filter(p=>p&&p.dataUrl);
+    body.innerHTML=`<div class="upload-zone" id="drop-zone-${s.id}" onclick="(function(){const inp=document.getElementById('ph-inp-global');inp.dataset.sid='${s.id}';inp.click();})()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';(function(e){const inp={files:e.dataTransfer.files,value:'',dataset:{sid:'${s.id}'}};uploadPhotos('${s.id}',inp);})(event)">📂 Нажмите или перетащите фото<br><span style="font-size:10px">JPG, PNG · Drag & Drop</span></div>`+
       (photos.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Фото не добавлены</div>':
       `<div class="photo-grid">${photos.map((p,i)=>{
         const imgs=photos.filter(x=>x.dataUrl);
-        return`<div class="photo-item"><img src="${p.dataUrl}" alt="" onclick="openLB(${JSON.stringify(imgs).replace(/"/g,'&quot;')},${imgs.indexOf(p)})"><button class="photo-del" onclick="delPhoto('${s.id}',${i})">✕</button><div class="photo-fn">${(p.name||'').substring(0,20)}</div></div>`;
+        return`<div class="photo-item"><img src="${p.dataUrl}" alt="" onclick="openLBById('${s.id}',${i})"><button class="photo-del" onclick="delPhoto('${s.id}',${i})">✕</button><div class="photo-fn">${safeText((p.name||'').substring(0,20))}</div></div>`;
       }).join('')}</div>`);
   }
 }
@@ -483,30 +568,56 @@ window.addComment=async id=>{
   const now=new Date();
   comments.push({text,author:auth.currentUser?.displayName||'Вы',date:now.toLocaleDateString('ru-RU')+' '+now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});
   await updateDoc(doc(db,'suppliers',id),{comments});
+  if(inp)inp.value='';
   showToast('Добавлено');
 };
 window.delComment=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['comments']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{comments:c});};
 window.delContact=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['contacts']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{contacts:c});};
-window.delPhoto=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const p=[...(s['photos']||[])];p.splice(i,1);await updateDoc(doc(db,'suppliers',id),{photos:p});};
-window.uploadPhotos=(id,input)=>{
-  const files=Array.from(input.files);
-  const s=suppliers.find(x=>x.id===id);
-  const photos=[...(s['photos']||[])];
-  let done=0;
+window.delPhoto=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const visible=(s['photos']||[]).filter(p=>p&&p.dataUrl);const target=visible[i];const next=(s['photos']||[]).filter(p=>p!==target);await updateDoc(doc(db,'suppliers',id),{photos:next});showToast('Фото удалено');};
+window.uploadPhotos=async(id,input)=>{
+  const files=Array.from(input.files||[]);
+  if(!files.length)return;
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
+  const newPhotos=[];
+  let done=0,failed=0;
+  const process=()=>{
+    if(done+failed<files.length)return;
+    (async()=>{
+      try{
+        // arrayUnion гарантирует атомарное добавление без перезаписи чужих данных
+        await updateDoc(doc(db,'suppliers',id),{photos:arrayUnion(...newPhotos)});
+        showToast(failed?`Загружено ${done} фото (${failed} ошибок)`:`Загружено ${done} фото`);
+      }catch(e){showToast('Ошибка сохранения: '+e.message);}
+    })();
+  };
   files.forEach(file=>{
     const reader=new FileReader();
-    reader.onload=async e=>{
+    reader.onerror=()=>{failed++;process();};
+    reader.onload=e=>{
       const img=new Image();
-      img.onload=async()=>{
-        const canvas=document.createElement('canvas');
-        const scale=Math.min(1,900/img.width);
-        canvas.width=img.width*scale;canvas.height=img.height*scale;
-        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-        photos.push({name:file.name,type:file.type,dataUrl:canvas.toDataURL('image/jpeg',0.78)});
-        done++;if(done===files.length){await updateDoc(doc(db,'suppliers',id),{photos});showToast(`Загружено ${files.length} фото`);}
-      };img.src=e.target.result;
-    };reader.readAsDataURL(file);
-  });input.value='';
+      img.onerror=()=>{failed++;process();};
+      img.onload=()=>{
+        try{
+          const canvas=document.createElement('canvas');
+          const scale=Math.min(1,900/img.width);
+          canvas.width=img.width*scale;canvas.height=img.height*scale;
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          newPhotos.push({id:Date.now()+'-'+Math.random().toString(36).slice(2),name:file.name,type:'image/jpeg',dataUrl:canvas.toDataURL('image/jpeg',0.78)});
+          done++;
+        }catch(e){failed++;}
+        process();
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+};
+
+// Глобальный обработчик загрузки фото
+document.getElementById('ph-inp-global').onchange=function(){
+  const sid=this.dataset.sid;
+  if(sid)uploadPhotos(sid,this);
 };
 
 // CONTACT MODAL
@@ -563,7 +674,7 @@ document.getElementById('btn-cancel-modal').onclick=()=>document.getElementById(
 document.getElementById('btn-save-modal').onclick=async()=>{
   const name=document.getElementById('f-name').value.trim();
   if(!name){showToast('Введите название');return;}
-  const data={'Название (RU)':name,'Название (CN)':document.getElementById('f-namecn').value,'Проект':document.getElementById('f-proj').value,'Категория':document.getElementById('f-cat').value,'Локация':document.getElementById('f-loc').value,'Приоритет':document.getElementById('f-pri').value,'Источник выставки':document.getElementById('f-expo').value,'Роль в проекте':document.getElementById('f-role').value,'Продукты / Услуги':document.getElementById('f-prod').value,'Примечания':document.getElementById('f-note').value,'Контакт (имя)':document.getElementById('f-contact').value,'Телефон':document.getElementById('f-phone').value,'Email / WeChat':document.getElementById('f-email').value,'Сайт':document.getElementById('f-web').value};
+  const data={'Название (RU)':name,'Название (CN)':document.getElementById('f-namecn').value,'Проект':document.getElementById('f-proj').value,'Категория':document.getElementById('f-cat').value,'Локация':document.getElementById('f-loc').value,'Приоритет':document.getElementById('f-pri').value,'Источник выставки':document.getElementById('f-expo').value,'Роль в проекте':document.getElementById('f-role').value,'Продукты / Услуги':document.getElementById('f-prod').value,'Примечания':document.getElementById('f-note').value,'Контакт (имя)':document.getElementById('f-contact').value,'Телефон':document.getElementById('f-phone').value,'Email / WeChat':document.getElementById('f-email').value,'Сайт':normalizeUrl(document.getElementById('f-web').value)};
   try{
     if(editingId){
       await updateDoc(doc(db,'suppliers',editingId),data);
@@ -586,7 +697,57 @@ window.navLB=dir=>{lbIdx=(lbIdx+dir+lbPhotos.length)%lbPhotos.length;document.ge
 function lbKey(e){if(e.key==='ArrowRight')navLB(1);if(e.key==='ArrowLeft')navLB(-1);if(e.key==='Escape')closeLB();}
 
 // TOAST
+
+
+window.exportExcel=()=>{
+  if(typeof XLSX==='undefined'){showToast('SheetJS не загружен');return;}
+  const data=getFiltered().map(s=>({
+    'Компания': dispName(s),
+    'CN': s['Название (CN)']||'',
+    'Проект': s['Проект']||'',
+    'Категория': s['Категория']||'',
+    'Приоритет': s['Приоритет']||'',
+    'Стадия': s['Стадия переговоров']||'',
+    'Контакт': s['Контакт (имя)']||'',
+    'Телефон': s['Телефон']||'',
+    'Email/WeChat': s['Email / WeChat']||'',
+    'Сайт': s['Сайт']||'',
+    'Локация': s['Локация']||'',
+    'Роль': s['Роль в проекте']||'',
+    'Продукты': s['Продукты / Услуги']||'',
+    'Примечания': s['Примечания']||''
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Поставщики');
+  const d=new Date();
+  const fileDate=[d.getFullYear(),d.getMonth()+1,d.getDate()].map(x=>String(x).padStart(2,'0')).join('-');
+  XLSX.writeFile(wb,`TQ_CRM_${fileDate}.xlsx`);
+  showToast('Excel файл скачан');
+};
+
+window.toggleFilters=()=>{
+  const dr=document.getElementById('drawer');
+  const ov=document.getElementById('drawer-ov');
+  if(!dr||!ov)return;
+  dr.classList.toggle('open');
+  ov.classList.toggle('open');
+  if(dr.classList.contains('open'))dr.scrollTop=0;
+};
+
+window.openLBById=(id,i)=>{
+  const s=suppliers.find(x=>x.id===id);
+  if(!s)return;
+  const photos=(s['photos']||[]).filter(p=>p&&p.dataUrl);
+  if(!photos.length)return;
+  const safeIndex=Math.max(0,Math.min(i,photos.length-1));
+  openLB(photos,safeIndex);
+};
 window.showToast=msg=>{const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
 </script>
+
+<input type="file" id="ph-inp-global" multiple accept="image/*" style="display:none">
+<div class="drawer" id="drawer"></div>
+<div class="drawer-overlay" id="drawer-ov" onclick="toggleFilters()"></div>
 </body>
 </html>
