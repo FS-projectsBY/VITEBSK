@@ -221,7 +221,7 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 }
 
 /* APP SHOW/HIDE */
-#app{display:none;flex-direction:column;height:100vh;zoom:0.85}
+#app{display:none;flex-direction:column;height:100vh}
 #app.show{display:flex}
 
 /* AVATAR */
@@ -260,6 +260,10 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 /* LOADING SCREEN */
 #loading-screen{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:opacity 0.4s}
 #loading-screen.hide{opacity:0;pointer-events:none}
+
+/* МАСШТАБ — только десктоп */
+:root{--app-zoom:0.85}
+@media(min-width:769px){#app.show{zoom:var(--app-zoom)}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -389,7 +393,7 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,getDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import{getStorage,ref as sRef,uploadString,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const FC={apiKey:"AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",authDomain:"fs-projects-83332.firebaseapp.com",projectId:"fs-projects-83332",storageBucket:"fs-projects-83332.firebasestorage.app",messagingSenderId:"112584599239",appId:"1:112584599239:web:bdae8199b32c8605b4c0e2"};
@@ -615,7 +619,9 @@ function normalizeUrl(val=''){
   const s=String(val).trim();
   if(!s)return'';
   if(/^[a-z][a-z0-9+\-.]*:\/\//i.test(s))return s;
-  return'https://'+s;
+  // Только добавляем https:// если выглядит как домен (содержит точку)
+  if(/^[a-zA-Z0-9][a-zA-Z0-9\-_.]+\.[a-zA-Z]{2,}/.test(s))return'https://'+s;
+  return s; // иначе возвращаем как есть
 }
 
 function fld(label,val,link=false){
@@ -657,7 +663,6 @@ function renderTab(s){
     body.innerHTML=`<div class="upload-zone" id="drop-zone-${s.id}" onclick="(function(){const inp=document.getElementById('ph-inp-global');inp.dataset.sid='${s.id}';inp.click();})()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';(function(e){const inp={files:e.dataTransfer.files,value:'',dataset:{sid:'${s.id}'}};uploadPhotos('${s.id}',inp);})(event)">📂 Нажмите или перетащите фото<br><span style="font-size:10px">JPG, PNG · Drag & Drop</span></div>`+
       (photos.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Фото не добавлены</div>':
       `<div class="photo-grid">${photos.map((p,i)=>{
-        const imgs=photos.filter(x=>x.dataUrl);
         return`<div class="photo-item"><img src="${p.url||p.dataUrl||''}" alt="" onclick="openLBById('${s.id}',${i})"><button class="photo-del" onclick="delPhoto('${s.id}',${i})">✕</button><div class="photo-fn">${safeText((p.name||'').substring(0,20))}</div></div>`;
       }).join('')}</div>`);
   }
@@ -677,33 +682,48 @@ window.addComment=async id=>{
 window.delComment=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['comments']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{comments:c});};
 window.delContact=async(id,i)=>{const s=suppliers.find(x=>x.id===id);const c=[...(s['contacts']||[])];c.splice(i,1);await updateDoc(doc(db,'suppliers',id),{contacts:c});};
 window.delPhoto=async(id,i)=>{
-  const s=suppliers.find(x=>x.id===id);
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
   const visible=(s['photos']||[]).filter(p=>p&&(p.dataUrl||p.url));
-  const target=visible[i];
-  const next=(s['photos']||[]).filter(p=>p!==target);
+  const target=visible[i];if(!target)return;
   try{
     if(target?.path){await deleteObject(sRef(stor,target.path));}
   }catch(e){console.warn('Storage delete:',e);}
-  await updateDoc(doc(db,'suppliers',id),{photos:next});
-  showToast('Фото удалено');
+  // Читаем свежий список из Firestore перед обновлением
+  try{
+    const freshSnap=await getDoc(doc(db,'suppliers',id));
+    const freshPhotos=freshSnap.exists()?(freshSnap.data()['photos']||[]):[];
+    const next=freshPhotos.filter(p=>p!==target&&!(p.id&&p.id===target.id));
+    await updateDoc(doc(db,'suppliers',id),{photos:next});
+    showToast('Фото удалено');
+  }catch(e){showToast('Ошибка удаления: '+e.message,true);}
 };
 window.uploadPhotos=async(id,input)=>{
   const files=Array.from(input.files||[]);
   if(!files.length)return;
   const s=suppliers.find(x=>x.id===id);if(!s)return;
   if((s['photos']||[]).filter(p=>p&&(p.dataUrl||p.url)).length>=20){showToast('Лимит 20 фото на компанию');return;}
+  // Блокируем повторный клик на время загрузки
+  const zone=document.getElementById('drop-zone-'+id);
+  if(zone){zone.style.pointerEvents='none';zone.style.opacity='0.5';}
+  const unblock=()=>{if(zone){zone.style.pointerEvents='';zone.style.opacity='';}}
   let done=0,failed=0;
   const newPhotos=[];
   const tryFinish=async()=>{
     if(done+failed<files.length)return;
-    if(!newPhotos.length){showToast(`Ошибок: ${failed}`,true);return;}
+    if(!newPhotos.length){showToast(`Ошибок: ${failed}`,true);unblock();return;}
     try{
-      const fresh=suppliers.find(x=>x.id===id);
-      const currentPhotos=fresh?.['photos']||[];
-      const updatedPhotos=[...currentPhotos,...newPhotos];
+      // Читаем свежие данные из Firestore перед merge (защита от race condition)
+      const freshSnap=await getDoc(doc(db,'suppliers',id));
+      const currentPhotos=freshSnap.exists()?(freshSnap.data()['photos']||[]):[];
+      const validCount=currentPhotos.filter(p=>p&&(p.dataUrl||p.url)).length;
+      if(validCount>=20){showToast('Лимит 20 фото достигнут',true);unblock();return;}
+      const slots=20-validCount;
+      const trimmed=newPhotos.slice(0,slots);
+      if(trimmed.length<newPhotos.length)showToast(`Добавлено ${trimmed.length} из ${newPhotos.length} (лимит 20)`);
+      const updatedPhotos=[...currentPhotos,...trimmed];
       await updateDoc(doc(db,'suppliers',id),{photos:updatedPhotos});
-      showToast(failed?`Загружено ${done} фото (${failed} ошибок)`:`Загружено ${done} фото`);
-    }catch(e){showToast('Ошибка сохранения: '+e.message,true);}
+      showToast(failed?`Загружено ${done} фото (${failed} ошибок)`:`Загружено ${done} фото`);unblock();
+    }catch(e){showToast('Ошибка сохранения: '+e.message,true);unblock();}
   };
   files.forEach(file=>{
     if(file.size>5*1024*1024){showToast('Файл '+file.name+' > 5MB',true);failed++;tryFinish();return;}
