@@ -377,14 +377,14 @@ function getFiltered(ignoreCat=false){
   let list=suppliers;
   if(curProject==='aqua')list=list.filter(s=>s['Проект']==='Аква Витебск');
   if(curProject==='dino')list=list.filter(s=>s['Проект']==='DinoAlpaca Valley');
-  if(!ignoreCat&&curCat!=='all')list=list.filter(s=>s['Категория']===curCat);
+  if(!ignoreCat&&curCat!=='all')list=list.filter(s=>normCat(s['Категория'])===curCat);
   const q=(document.getElementById('search')?.value||'').toLowerCase();
   if(q)list=list.filter(s=>
       [
         dispName(s),
         s['Название (CN)'],
         s['Контакт (имя)'],
-        s['Категория'],
+        normCat(s['Категория']),
         s['Локация'],
         s['Сайт'],
         s['Email / WeChat'],
@@ -415,7 +415,7 @@ function bindCatButtons(scope){
 function renderSidebar(){
   const all=getFiltered(true);
   const cats={};
-  all.forEach(s=>{const c=(s['Категория']||'').trim()||'Другое';cats[c]=(cats[c]||0)+1;});
+  all.forEach(s=>{const c=normCat(s['Категория']);cats[c]=(cats[c]||0)+1;});
   let html=`<button class="cat-btn${curCat==='all'?' active':''}" data-cat="all"><span class="cat-icon">◉</span><span class="cat-name">Все категории</span><span class="cat-cnt">${all.length}</span></button>`;
   Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>{
     html+=`<button class="cat-btn${encodeURIComponent(curCat)===encodeURIComponent(c)?' active':''}" data-cat="${encodeURIComponent(c)}"><span class="cat-icon">${CAT_ICONS[c]||'📦'}</span><span class="cat-name">${safeText(c)}</span><span class="cat-cnt">${n}</span></button>`;
@@ -453,7 +453,7 @@ window.renderTable=()=>{
       <td style="color:var(--muted);font-size:10px;width:28px">${i+1}</td>
       <td><div class="co-name">${safeText(dispName(s))}</div><div class="co-sub">${safeText((s['Название (CN)']||'').substring(0,35))}</div></td>
       <td>${proj}</td>
-      <td style="font-size:10px;color:var(--muted)">${CAT_ICONS[s['Категория']]||'📦'} ${safeText(s['Категория']||'')}</td>
+      <td style="font-size:10px;color:var(--muted)">${CAT_ICONS[normCat(s['Категория'])]||'📦'} ${safeText(normCat(s['Категория']))}</td>
       <td><select class="pri-sel badge ${pc}" onchange="changePri('${s.id}',this.value)" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">${priOpts}</select></td>
       <td><select class="stage-sel" style="color:${sc}" onchange="changeStage('${s.id}',this.value)" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">${stOpts}</select></td>
       <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeText(s['Контакт (имя)']||'—')}</td>
@@ -507,6 +507,7 @@ function escapeHtml(str=''){
     .replace(/'/g,'&#39;');
 }
 function safeText(v=''){return escapeHtml(String(v||''));}
+function normCat(v=''){return String(v||'').trim()||'Другое';}
 function isEmail(v=''){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).trim());}
 function normalizeUrl(val=''){
   const s=String(val).trim();
