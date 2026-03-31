@@ -252,8 +252,8 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 }
 
 /* APP SHOW/HIDE */
-#app{display:none;flex-direction:column;height:100%;min-height:100vh}
-#app.show{display:flex}
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
+#app.show{display:flex;height:100vh}
 
 /* AVATAR */
 .user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7c3aed);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);object-fit:cover}
@@ -295,7 +295,8 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 /* МАСШТАБ — только десктоп */
 :root{--app-zoom:0.85}
 @media(min-width:769px){
-  html{zoom:var(--app-zoom)}
+  html{zoom:0.85}
+  html,body{height:calc(100% / 0.85)}
 }
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
