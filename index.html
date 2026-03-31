@@ -263,7 +263,13 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 
 /* МАСШТАБ — только десктоп */
 :root{--app-zoom:0.85}
-@media(min-width:769px){#app.show{zoom:var(--app-zoom)}}
+@media(min-width:769px){
+  #app.show{
+    zoom:var(--app-zoom);
+    width:calc(100% / var(--app-zoom));
+    height:calc(100vh / var(--app-zoom));
+  }
+}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
