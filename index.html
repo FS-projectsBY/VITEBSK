@@ -50,7 +50,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .btn-google:hover{background:var(--card);border-color:var(--accent)}
 
 /* HEADER */
-.header{height:54px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:8px;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.header{height:54px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:8px;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .header-logo{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.03em;display:flex;align-items:center;gap:8px;margin-right:4px}
 .header-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
 .header-logo span{color:var(--muted);font-weight:400}
@@ -73,7 +73,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
 
 /* LAYOUT */
-.main{display:flex;height:calc(100vh - 54px)}
+.main{display:flex;flex:1;min-height:0;overflow:hidden}
 
 /* SIDEBAR */
 .sidebar{width:210px;background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:12px 0}
@@ -214,14 +214,45 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 
 /* MOBILE */
 @media(max-width:768px){
-  .sidebar{display:none}
+  /* HEADER — адаптив */
+  .header{
+    height:auto;
+    min-height:54px;
+    padding:8px 12px;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .proj-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    order:2;
+    width:100%;
+  }
+  .header-right{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-left:auto;
+    flex-wrap:nowrap;
+  }
+  .search-box{width:110px}
   .btn-filters{display:block}
-  .detail.open{width:100%;position:fixed;inset:0;z-index:50}
-  .search-box{width:130px}
+  .btn-export{display:none}
+
+  /* SIDEBAR */
+  .sidebar{display:none}
+
+  /* MAIN — flex:1 подстраивается под реальную высоту header */
+  .main{height:auto;flex:1;min-height:0;overflow:hidden}
+
+  /* DETAIL */
+  .detail.open{width:100%;position:fixed;inset:0;z-index:50;top:0}
 }
 
 /* APP SHOW/HIDE */
-#app{display:none;flex-direction:column;height:100vh}
+#app{display:none;flex-direction:column;height:100%;min-height:100vh}
 #app.show{display:flex}
 
 /* AVATAR */
@@ -264,11 +295,7 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 /* МАСШТАБ — только десктоп */
 :root{--app-zoom:0.85}
 @media(min-width:769px){
-  #app.show{
-    zoom:var(--app-zoom);
-    width:calc(100% / var(--app-zoom));
-    height:calc(100vh / var(--app-zoom));
-  }
+  html{zoom:var(--app-zoom)}
 }
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
