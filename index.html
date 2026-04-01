@@ -74,7 +74,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
 
 /* LAYOUT */
-.main{flex:1 1 auto;min-height:0;display:flex;overflow:hidden}
+.main{display:flex;min-width:0;min-height:0;overflow:hidden;flex:1 1 auto}
 
 /* SIDEBAR */
 .sidebar{width:210px;background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:12px 0}
@@ -126,7 +126,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .photo-count{font-size:11px;color:var(--muted);font-family:var(--mono);background:var(--card);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
 
 /* DETAIL PANEL */
-.detail{width:0;min-width:0;overflow:hidden;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;transition:width 0.2s;flex:0 0 auto;box-shadow:-2px 0 10px rgba(0,0,0,0.05)}
+.detail{flex:0 0 auto;width:0;min-width:0;overflow:hidden;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;transition:width 0.2s;box-shadow:-2px 0 10px rgba(0,0,0,0.05)}
 .detail.open{width:clamp(320px,28vw,400px)}
 .det-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
 .det-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
@@ -215,41 +215,34 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 
 /* MOBILE */
 @media(max-width:768px){
-  /* HEADER — адаптив */
   .header{
     height:auto;
     min-height:54px;
     padding:8px 12px;
-    align-items:center;
     flex-wrap:wrap;
-    gap:6px;
-  }
-  .proj-tabs{
-    display:flex;
-    flex-wrap:wrap;
-    gap:4px;
-    order:2;
-    width:100%;
+    gap:8px;
   }
   .header-right{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    margin-left:auto;
-    flex-wrap:nowrap;
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:8px;
+    margin-left:0;
   }
-  .search-box{width:110px}
-  .btn-filters{display:block}
+  .search-box{width:100%;min-width:0}
+  .btn-add{white-space:nowrap}
   .btn-export{display:none}
-
-  /* SIDEBAR */
+  .btn-filters{display:block}
+  .proj-tabs{
+    width:100%;
+    order:3;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
   .sidebar{display:none}
-
-  /* MAIN — flex:1 подстраивается под реальную высоту header */
-  .main{height:auto;flex:1;min-height:0;overflow:hidden}
-
-  /* DETAIL */
-  .detail.open{width:100%;position:fixed;inset:0;z-index:50;top:0}
+  .main{flex:1;min-height:0;overflow:hidden}
+  .detail.open{width:100%;position:fixed;inset:0;z-index:50}
 }
 
 /* APP SHOW/HIDE */
@@ -260,7 +253,7 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 .user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7c3aed);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.12);object-fit:cover}
 
 /* TABLE */
-.table-wrap{flex:1;overflow:auto;background:var(--bg)}
+.table-wrap{flex:1 1 auto;min-width:0;overflow:auto;background:var(--bg)}
 table{width:100%;border-collapse:separate;border-spacing:0}
 thead{position:sticky;top:0;z-index:5;background:#fff;box-shadow:0 1px 0 var(--border)}
 th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -294,26 +287,7 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 #loading-screen.hide{opacity:0;pointer-events:none}
 
 /* МАСШТАБ — только десктоп */
-:root{--app-zoom:0.85}
-@media(min-width:769px){
-  #app.show{
-    zoom:var(--app-zoom);
-    width:calc(100% / var(--app-zoom));
-    height:calc(100% / var(--app-zoom));
-  }
-}
-
-@media(max-width:1400px) and (min-width:769px){
-  .detail.open{
-    position:fixed;
-    top:54px;
-    right:0;
-    bottom:0;
-    width:360px;
-    z-index:60;
-    box-shadow:-8px 0 24px rgba(0,0,0,0.12);
-  }
-}
+/* zoom убран — использовать Ctrl+- в браузере */
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
