@@ -90,7 +90,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .cat-btn.active .cat-cnt{background:var(--accent-border);color:var(--accent)}
 
 /* CONTENT */
-.content{flex:1;display:flex;overflow:hidden}
+.content{flex:1;min-width:0;display:flex;overflow:hidden}
 .table-area{flex:1;overflow-y:auto;background:var(--bg)}
 
 .tbl thead{position:sticky;top:0;z-index:5;background:var(--surface)}
@@ -127,7 +127,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 /* DETAIL PANEL */
 .detail{width:0;overflow:hidden;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;transition:width 0.2s;flex-shrink:0;box-shadow:-2px 0 10px rgba(0,0,0,0.05)}
-.detail.open{width:400px}
+.detail.open{width:min(400px,35%)}
 .det-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
 .det-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
 .det-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
