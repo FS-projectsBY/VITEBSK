@@ -126,8 +126,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .photo-count{font-size:11px;color:var(--muted);font-family:var(--mono);background:var(--card);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
 
 /* DETAIL PANEL */
-.detail{width:0;overflow:hidden;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;transition:width 0.2s;flex-shrink:0;box-shadow:-2px 0 10px rgba(0,0,0,0.05)}
-.detail.open{width:min(400px,35%)}
+.detail{width:0;min-width:0;overflow:hidden;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;transition:width 0.2s;flex:0 0 auto;box-shadow:-2px 0 10px rgba(0,0,0,0.05)}
+.detail.open{width:clamp(320px,28vw,400px)}
 .det-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
 .det-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
 .det-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
@@ -300,6 +300,18 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
     zoom:var(--app-zoom);
     width:calc(100% / var(--app-zoom));
     height:calc(100% / var(--app-zoom));
+  }
+}
+
+@media(max-width:1400px) and (min-width:769px){
+  .detail.open{
+    position:fixed;
+    top:54px;
+    right:0;
+    bottom:0;
+    width:360px;
+    z-index:60;
+    box-shadow:-8px 0 24px rgba(0,0,0,0.12);
   }
 }
 </style>
