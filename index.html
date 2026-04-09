@@ -216,78 +216,34 @@ input.field:focus,select.field:focus,textarea.field:focus{border-color:var(--acc
 /* MOBILE */
 @media(max-width:768px){
   .header{
-    flex:0 0 auto;          
     height:auto;
     min-height:54px;
-    padding:8px 12px 10px;
+    padding:8px 12px;
     flex-wrap:wrap;
-    align-items:flex-start;
     gap:8px;
   }
-
-  .header-logo{
-    flex:0 0 100%;
-  }
-
   .header-right{
     width:100%;
-    order:2;
     display:grid;
-    grid-template-columns:1fr 1.25fr 1.15fr auto;
+    grid-template-columns:1fr auto auto;
     gap:8px;
     margin-left:0;
-    align-items:stretch;
   }
-
+  .search-box{width:100%;min-width:0}
+  .btn-add{white-space:nowrap}
+  .btn-export{display:none}
+  .btn-filters{display:block}
   .proj-tabs{
     width:100%;
     order:3;
     display:flex;
-    flex-wrap:nowrap;
-    gap:10px;
-    align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
   }
-
-  .proj-tab{
-    padding:6px 10px;
-    white-space:nowrap;
-  }
-
-  .search-box{
-    width:100%;
-    min-width:0;
-  }
-
-  .btn-add{
-    white-space:nowrap;
-  }
-
-  .btn-export{
-    display:none;
-  }
-
-  .btn-filters{
-    display:block;
-  }
-
-  .sidebar{
-    display:none;
-  }
-
-  .main{
-    flex:1;
-    min-height:0;
-    overflow:hidden;
-  }
-
-  .detail.open{
-    width:100%;
-    position:fixed;
-    inset:0;
-    z-index:50;
-  }
+  .sidebar{display:none}
+  .main{flex:1;min-height:0;overflow:hidden}
+  .detail.open{width:100%;position:fixed;inset:0;z-index:50}
 }
-
 
 /* APP SHOW/HIDE */
 #app{display:none;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
@@ -394,6 +350,7 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
           <button class="dtab" onclick="switchTab('contacts',this)">👥 Контакты</button>
           <button class="dtab" onclick="switchTab('comments',this)">💬 История</button>
           <button class="dtab" onclick="switchTab('photos',this)">📷 Фото</button>
+          <button class="dtab" onclick="switchTab('files',this)">📎 Файлы</button>
         </div>
         <div class="det-body" id="det-body"></div>
       </div>
@@ -461,8 +418,8 @@ tr.row.selected td:first-child{border-left:3px solid var(--accent);padding-left:
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,updateDoc,getDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import{getStorage,ref as sRef,uploadString,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,getDoc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import{getStorage,ref as sRef,uploadString,uploadBytes,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const FC={apiKey:"AIzaSyAlveC5eNXdcapgiDQQti0aPVYylIPYihE",authDomain:"fs-projects-83332.firebaseapp.com",projectId:"fs-projects-83332",storageBucket:"fs-projects-83332.firebasestorage.app",messagingSenderId:"112584599239",appId:"1:112584599239:web:bdae8199b32c8605b4c0e2"};
 const app=initializeApp(FC);
@@ -713,7 +670,7 @@ function renderTab(s){
       fld('Продукты / Услуги',s['Продукты / Услуги'])+
       (s['Примечания']?`<div class="f-label">Примечания</div><div class="f-note">${safeText(s['Примечания'])}</div>`:'')+
       fld('Сайт',s['Сайт'],true)+
-      `<button class="edit-btn" onclick="openEditModal('${s.id}')">✏️ Редактировать</button>`;
+      `<div style="display:flex;gap:8px;margin-top:16px"><button class="edit-btn" onclick="openEditModal('${s.id}')">✏️ Редактировать</button><button class="edit-btn" style="color:var(--hot);border-color:#fecaca" onclick="deleteCompany('${s.id}')">🗑 Удалить компанию</button></div>`;
   }else if(curTab==='contacts'){
     const contacts=s['contacts']||[];
     body.innerHTML=`<button class="btn-primary" style="margin-bottom:12px" onclick="openContactModal('${s.id}')">+ Добавить контакт</button>`+
@@ -733,6 +690,11 @@ function renderTab(s){
       `<div class="photo-grid">${photos.map((p,i)=>{
         return`<div class="photo-item"><img src="${p.url||p.dataUrl||''}" alt="" onclick="openLBById('${s.id}',${i})"><button class="photo-del" onclick="delPhoto('${s.id}',${i})">✕</button><div class="photo-fn">${safeText((p.name||'').substring(0,20))}</div></div>`;
       }).join('')}</div>`);
+  }else if(curTab==='files'){
+    const files=(s['files']||[]);
+    body.innerHTML=`<div class="upload-zone" onclick="(function(){const inp=document.getElementById('file-inp-global');inp.dataset.sid='${s.id}';inp.click();})()">📎 Загрузить файл<br><span style="font-size:10px">PDF, DOC, DOCX, XLS, JPG и др.</span></div>`+
+      (files.length===0?'<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Файлы не добавлены</div>':
+      files.map((f,i)=>`<div class="contact-card"><button class="del-btn" onclick="delFile('${s.id}',${i})">✕</button><div class="c-name">📎 <a class="tel-link" href="${f.url}" target="_blank" rel="noopener noreferrer">${safeText(f.name||'Файл')}</a></div><div class="c-role">${safeText(f.type||'')} · ${Math.round((f.size||0)/1024)} KB · ${safeText(f.date||"")}</div></div>`).join(''));
   }
 }
 
@@ -830,6 +792,8 @@ if(_phInp){_phInp.onchange=function(){
   const sid=this.dataset.sid;
   if(sid)uploadPhotos(sid,this);
 };}
+const _fileInp=document.getElementById('file-inp-global');
+if(_fileInp){_fileInp.onchange=function(){const sid=this.dataset.sid;if(sid)uploadFiles(sid,this);};}
 
 // CONTACT MODAL
 window.openContactModal=id=>{
@@ -891,7 +855,7 @@ document.getElementById('btn-save-modal').onclick=async()=>{
       await updateDoc(doc(db,'suppliers',editingId),data);
       showToast('Сохранено');
     }else{
-      data['Стадия переговоров']='Новый';data['comments']=[];data['contacts']=[];data['photos']=[];data['createdAt']=serverTimestamp();
+      data['Стадия переговоров']='Новый';data['comments']=[];data['contacts']=[];data['photos']=[];data['files']=[];data['createdAt']=serverTimestamp();
       const ref=await addDoc(collection(db,'suppliers'),data);
       selectedId=ref.id;
       showToast('Поставщик добавлен');
@@ -954,10 +918,53 @@ window.openLBById=(id,i)=>{
   const safeIndex=Math.max(0,Math.min(i,photos.length-1));
   openLB(photos,safeIndex);
 };
+window.uploadFiles=async(id,input)=>{
+  const files=Array.from(input.files||[]);
+  if(!files.length)return;
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
+  const newFiles=[];
+  for(const file of files){
+    try{
+      const fileId=crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(36).slice(2));
+      const path='supplier_files/'+id+'/'+fileId+'_'+file.name.replace(/[^\w.\- ]/g,'_');
+      const fileRef=sRef(stor,path);
+      await uploadBytes(fileRef,file,{contentType:file.type||'application/octet-stream'});
+      const url=await getDownloadURL(fileRef);
+      const now=new Date();
+      newFiles.push({id:fileId,name:file.name,type:file.type||'',size:file.size||0,url,path,date:now.toLocaleDateString('ru-RU')});
+    }catch(e){console.error(e);showToast('Ошибка: '+file.name,true);}
+  }
+  if(!newFiles.length)return;
+  const freshSnap=await getDoc(doc(db,'suppliers',id));
+  const currentFiles=freshSnap.exists()?(freshSnap.data()['files']||[]):[];
+  await updateDoc(doc(db,'suppliers',id),{files:[...currentFiles,...newFiles]});
+  showToast('Загружено: '+newFiles.length+' файл(ов)');
+  input.value='';
+};
+window.delFile=async(id,i)=>{
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
+  const files=s['files']||[];const target=files[i];if(!target)return;
+  if(!confirm('Удалить файл "'+target.name+'"?'))return;
+  try{if(target.path)await deleteObject(sRef(stor,target.path));}catch(e){console.warn(e);}
+  const freshSnap=await getDoc(doc(db,'suppliers',id));
+  const freshFiles=freshSnap.exists()?(freshSnap.data()['files']||[]):[];
+  await updateDoc(doc(db,'suppliers',id),{files:freshFiles.filter(f=>f!==target&&!(f.id&&f.id===target.id))});
+  showToast('Файл удалён');
+};
+window.deleteCompany=async(id)=>{
+  const s=suppliers.find(x=>x.id===id);if(!s)return;
+  if(!confirm('Удалить компанию "'+dispName(s)+'"?\nЭто действие необратимо.'))return;
+  try{
+    for(const p of(s['photos']||[])){try{if(p&&p.path)await deleteObject(sRef(stor,p.path));}catch(e){}}
+    for(const f of(s['files']||[])){try{if(f&&f.path)await deleteObject(sRef(stor,f.path));}catch(e){}}
+    await deleteDoc(doc(db,'suppliers',id));closeDet();showToast('Компания удалена');
+  }catch(e){showToast('Ошибка: '+e.message,true);}
+};
 window.showToast=(msg,isErr=false)=>{const t=document.getElementById('toast');t.textContent=(isErr?'✕ ':'✓ ')+msg;t.classList.toggle('error',isErr);t.classList.add('show');setTimeout(()=>{t.classList.remove('show','error');},2500);};
 </script>
 
 <input type="file" id="ph-inp-global" multiple accept="image/*" style="display:none">
+<input type="file" id="file-inp-global" multiple style="display:none">
 <div class="drawer" id="drawer"></div>
 <div class="drawer-overlay" id="drawer-ov" onclick="toggleFilters()"></div>
 </body>
